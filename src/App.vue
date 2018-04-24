@@ -76,6 +76,24 @@
                             <li v-for="ticker in comp.availStocks">{{ticker}}</li>
                         </ul>
                     </div>
+                    <div class="modalBox">
+                    
+                        <h3> Leader Board</h3>
+                        <ul>
+                            <li v-for="user in comp.users"> {{user.username}}</li>
+                        </ul>
+                    </div>
+                    <button @click="joinComp(comp)">Join</button>
+                </div>
+                <div class="modal" v-if="userJoining">
+                    <div class="joinContainer">
+                        <p> JOIN SCREEN TEMP</p>
+                        <h3> Available Stocks</h3>
+                        <ul class="availStocks">
+                            <li v-for="(ticker,index) in comp.availStocks">{{ticker}}<input v-model="selectedStocks[index]" placeholder="add % up to 100"></li>
+                        </ul>
+                        <button @click="submitPicks(comp)"> Select Stocks</button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -121,7 +139,10 @@ export default {
             catToAdd: null,
             timeToAdd: null,
             isShown: false,
-            currentUid: null
+            currentUid: null,
+            userJoining: false,
+            //selectedStocks: [null,null,null,null,null,null,null,null,null,null]
+            selectedStocks: [0,0,0,0,0,0,0,0,0,0]
         }
     },
     firebase: {
@@ -210,8 +231,58 @@ export default {
             compsRef.child(comp['.key']).update({viewModal: true});
         },
         
+        //closes teh modal view
         closeModal(comp) {
             compsRef.child(comp['.key']).update({viewModal: false});
+        },
+        
+        //allows user to join a competition
+        joinComp(comp){
+            if(this.user){
+                var userAlreadyJoined = false;
+                for(var i in comp.users){
+                    console.log(comp.users[i].userid);
+                    if(comp.users[i].userid === this.user.uid){
+                        userAlreadyJoined = true;
+                        alert("You have already joined this competition");
+                    } 
+                }
+                if(!userAlreadyJoined){
+                    console.log("user is joining competition")
+                    this.userJoining = true;
+                }   
+                
+            } else {
+                alert("You must be logged in to join");
+            }
+        },
+        //submits the stocks the user wants to enter in the competition
+        submitPicks(comp){
+            var sum = 0;
+            for(var i = 0; i <this.selectedStocks.length; i++){
+                if(this.selectedStocks[i] !== null){
+                    sum += parseFloat(this.selectedStocks[i]);
+                }
+            }
+            var map = {};
+            if(sum === 100.0){
+                //close the joining modal
+                this.userJoining = false;
+                
+                for(var j = 0; j <this.selectedStocks.length; j++){
+                    map[comp.availStocks[j]] = parseFloat(this.selectedStocks[j]);       
+                }
+                compsRef.child(comp['.key']).child("users").push({username: this.user.name, 
+                                                                 userid: this.user.uid,
+                                                                 useremail: this.user.email,
+                                                                  value: 0,
+                                                                  stocksMap: map
+                                                                 });
+                //reset selected stocks ammounts
+                this.selectedStocks = [0,0,0,0,0,0,0,0,0,0];
+            } else {
+                alert("Make sure selections add up to 100%");
+            }
         }
     }
 }
