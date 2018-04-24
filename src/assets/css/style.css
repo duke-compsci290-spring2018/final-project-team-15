@@ -1,0 +1,31 @@
+body {
+    background-color: cadetblue;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: auto;
+    padding: 10px;
+}
+/* below formatting adapted from image gallery assignment resources link about modals */
+.modal {
+    display: block; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 0px; /* Location of the box */
+    left: 25%;
+    top: 25%;
+    width: 50%; /* Full width */
+    height: 50%; /* Full height */
+    border-radius: 25px;
+    overflow: auto;
+    background-color: whitesmoke;
+}
+
+.popup {
+    position: absolute;
+    padding: 15px;
+    width: 350px;
+    height: 250px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,0%);
+}
