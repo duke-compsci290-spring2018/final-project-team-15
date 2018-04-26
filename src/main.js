@@ -7,6 +7,7 @@ import './assets/css/style.css'
 import Vue from 'vue'
 import VueFire from 'vuefire'
 import App from './App.vue'
+import { MAP_KEY } from './keys.js'
 
 // turn off the console note about switching to production mode
 Vue.config.productionTip = false

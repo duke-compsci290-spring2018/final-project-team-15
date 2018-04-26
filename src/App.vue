@@ -82,6 +82,7 @@
                         <ul>
                             <li v-for="user in comp.users"> {{user.username}}</li>
                         </ul>
+                        <button @click="getPortVal(comp)">Update values</button>
                     </div>
                     <button @click="joinComp(comp)">Join</button>
                 </div>
@@ -159,7 +160,91 @@ export default {
             }
         }
     },
+    mounted (){
+        //this.calcShares("MSFT", 100);  
+    },
     methods: {
+        //gets the data from a url 
+        getStockData (url, comp,ticker, percent){
+            var initVal = 1000000.0;
+            fetch(url).then(response => response.json())
+                      .then(data => {
+                            if(data){
+                                var u = compsRef.child(comp['.key']).child("users").child(this.user.uid);
+                                var lastTime = data["Meta Data"]["3. Last Refreshed"];
+                                lastTime = lastTime.slice(0, -2) + "00";
+                                var price = parseFloat(data["Time Series (1min)"][lastTime]["4. close"]);
+                                var shares = (initVal * (percent / 100.0) ) / price;
+                                u.child("shares").child(ticker).set(ticker +" "+ shares);
+                            }
+                       })
+                      .catch(error => console.log(error))            
+        },
+        
+        //calculates the current users value.
+        getPortVal(comp){
+            console.log("getting value!!");
+            for(var i in comp.users){
+                var userBank = 0;
+                var userID = comp.users[i].userid;
+                
+                var promiseArray = [];
+                
+                for(var j in comp.users[i].shares){
+                    
+                    var ticker = comp.users[i].shares[j];
+                    var shares = ticker.split(" ")[1];
+                    ticker = ticker.split(" ")[0];
+                    var key = "LSL4TQ54M83DX4NV";
+                    var url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&interval=1min&apikey=" + key;
+                    
+                    promiseArray.push(new Promise(function(resolve, reject) {
+                        
+                        fetch(url).then(response => response.json()).then(data => {
+                            if(data){
+                                var lastTime = data["Meta Data"]["3. Last Refreshed"];
+                                lastTime = lastTime.slice(0, -2) + "00";
+                                var price = parseFloat(data["Time Series (1min)"][lastTime]["4. close"]);
+                                console.log("ticker: " + ticker);
+                                console.log("price: " + price);
+                                console.log("shares: "+shares);
+//                        userBank += price * shares;
+//                        compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(userBank);
+                        
+                                resolve( price * shares);
+                            }
+                        }).catch(error => console.log(error))  
+                    }));
+                }
+                const reducer = (accumulator, currentValue) => accumulator + currentValue;
+                
+                Promise.all(promiseArray).then(console.log("resolved")).then(
+                    console.log(promiseArray.reduce(reducer))
+                );
+            }
+        },
+        
+        //
+        callAPI(url, ticker, shares, userID, comp, userBank){
+            fetch(url).then(response => response.json())
+              .then(data => {
+                    if(data){
+                        var lastTime = data["Meta Data"]["3. Last Refreshed"];
+                        lastTime = lastTime.slice(0, -2) + "00";
+                        var price = parseFloat(data["Time Series (1min)"][lastTime]["4. close"]);
+                        console.log("ticker: " + ticker);
+                        console.log("price: " + price);
+                        console.log("shares: "+shares);
+//                        userBank += price * shares;
+//                        compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(userBank);
+                        
+                        resolve( price * shares);
+                    }
+               })
+              .catch(error => console.log(error))  
+        },
+        
+        
         // allow child component to change user value
         getUser () {
             return this.user
@@ -181,7 +266,6 @@ export default {
             }
             return [];  
         },
-        
         
         //Helper function used to set deadline
         addTime() {
@@ -251,7 +335,6 @@ export default {
                     console.log("user is joining competition")
                     this.userJoining = true;
                 }   
-                
             } else {
                 alert("You must be logged in to join");
             }
@@ -270,19 +353,40 @@ export default {
                 this.userJoining = false;
                 
                 for(var j = 0; j <this.selectedStocks.length; j++){
-                    map[comp.availStocks[j]] = parseFloat(this.selectedStocks[j]);       
+                    map[comp.availStocks[j]] = parseFloat(this.selectedStocks[j]);  
                 }
-                compsRef.child(comp['.key']).child("users").push({username: this.user.name, 
-                                                                 userid: this.user.uid,
-                                                                 useremail: this.user.email,
-                                                                  value: 0,
-                                                                  stocksMap: map
-                                                                 });
+                var userObject = {username: this.user.name, 
+                                    userid: this.user.uid,
+                                    useremail: this.user.email,
+                                    value: 0,
+                                    stocksMap: map
+                                };
+                //compsRef.child(comp['.key']).child("users").push(userObject);
+                compsRef.child(comp['.key']).child("users").child(this.user.uid).set(userObject);
+                
+                for(var j = 0; j <this.selectedStocks.length; j++){
+                    if(parseFloat(this.selectedStocks[j]) !== 0){
+                        this.calcShares(comp.availStocks[j], parseFloat(this.selectedStocks[j]),
+                                       comp,
+                                        userObject
+                                       );   
+                    }
+                }
+                
                 //reset selected stocks ammounts
                 this.selectedStocks = [0,0,0,0,0,0,0,0,0,0];
+                
+                this.getPortVal(comp);
+                
             } else {
                 alert("Make sure selections add up to 100%");
             }
+        },
+        //calculate how many shares of a stock that a user can buy at the current price
+        calcShares(ticker, percent,comp,userObject){
+            var key = "LSL4TQ54M83DX4NV";
+            var requestURL = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&interval=1min&apikey=" + key;
+            var responseJSON = this.getStockData(requestURL,comp,ticker,percent);
         }
     }
 }
