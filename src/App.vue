@@ -66,7 +66,7 @@
                 </div>
             </div>
             <!--MODALS-->
-            <div v-for="comp in competitions" v-if="comp.viewModal">
+            <div v-for="(comp,key) in competitions" v-if="key === viewKey">
                 <div class="modal">
                     <h2 class="modalTitle">{{ comp.title}}</h2>
                     <span class="closeModal" @click="closeModal(comp)">&times;</span>
@@ -150,7 +150,8 @@ export default {
             userJoining: false,
             selectedStocks: [0,0,0,0,0,0,0,0,0,0],
             hidden: false,
-            priceMap: {}
+            priceMap: {},
+            viewKey: null
         }
     },
     firebase: {
@@ -317,7 +318,7 @@ export default {
         addComp() {
             //TODO: only admins & logged in users can do this function
             console.log("adding competition");
-            if(this.catToAdd !== null && this.dateToAdd !== null){
+            if(this.catToAdd !== null && this.timeToAdd !== null){
                 var currDate = new Date().getTime();
                 var computedDeadline = currDate + this.addTime();
                 var stockArray = this.addStocksToComp();
@@ -332,7 +333,7 @@ export default {
                 
                 //reset options to allow user a blank slate for next competition
                 this.catToAdd = null;
-                this.dateToAdd = null;
+                this.timeToAdd = null;
             }
         },
 
@@ -347,24 +348,24 @@ export default {
             //compsRef.child(comp['.key']).update({viewModal: true});
             for(var i in this.competitions){
                 if(this.competitions[i]['.key'] === comp['.key']){
-                    this.competitions[i].viewModal = true;
-                    console.log("2: " + this.competitions[i].viewModal);
+                    this.viewKey = comp['.key'];
+                    //this.competitions[i].viewModal = true;
                     break;
                 }
             }
             this.getAllPrices(comp);
-            console.log("3: " +  this.competitions[i].viewModal);
         },
 
         //closes teh modal view
         closeModal(comp) {
             //compsRef.child(comp['.key']).update({viewModal: false});
-            for(var i in this.competitions){
-                if(this.competitions[i]['.key'] === comp['.key']){
-                    this.competitions[i].viewModal = false;
-                    break;
-                }
-            }
+//            for(var i in this.competitions){
+//                if(this.competitions[i]['.key'] === comp['.key']){
+//                    this.competitions[i].viewModal = false;
+//                    break;
+//                }
+//            }
+            this.viewKey = null;
         },
 
         //allows user to join a competition
