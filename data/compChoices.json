@@ -1,0 +1,51 @@
+{
+  "largeCap": {
+    "GE": false,
+    "BAC": false,
+    "F": false,
+    "BOX": false,
+    "TWTR": false,
+    "MU": false,
+    "AAPL": false,
+    "FB": false,
+    "MSFT": false,
+    "INTC": false
+  },
+  "crypto": {
+    "BTC": false,
+    "USDT": false,
+    "ETH": false,
+    "BCH": false,
+    "XRP": false,
+    "EOS": false,
+    "LTC": false,
+    "TRON": false,
+    "ETC": false,
+    "BTOM": false
+  },
+  "tech": {
+    "AAPL": false,
+    "MSFT": false,
+    "FB": false,
+    "GOOG": false,
+    "INTC": false,
+    "ORCL": false,
+    "NVDA": false,
+    "ADBE": false,
+    "CRM": false,
+    "SNAP": false
+  },
+  "bySector": {
+    "Telecommunication Services": false,
+    "Energy": false,
+    "Health Care": false,
+    "Consumer Discretionary": false,
+    "Real Estate": false,
+    "Utilities": false,
+    "Industrials": false,
+    "Financials": false,
+    "Consumer Staples": false,
+    "Materials": false,
+    "Information Technology": false
+  }
+}

@@ -2,6 +2,7 @@
 <ul>
     <li v-if="user"><a>{{user.name}}</a></li>
     <li v-if="user" @click="signOut"><a><span class="glyphicon glyphicon-log-out"></span>Logout</a></li>
+    <button v-if="user" @click="viewProfile">View Profile</button>
     <li v-else @click="signInPopup"><a><span class="glyphicon glyphicon-user"></span>Sign In</a></li>
     <!-- sign in "popup" container does not popup for email authentication, so provide so styling help -->
     <div id="firebaseui-auth-container" :class="{ popup: isShown }"></div>
@@ -73,6 +74,11 @@ export default {
         signOut () {
             Firebase.auth().signOut()
             this.setUser(null)
+        },
+
+        viewProfile() {
+          //window.location.href = "./profile.html"
+          this.$parent.hidden = !this.$parent.hidden;
         }
     },
     mounted () {
