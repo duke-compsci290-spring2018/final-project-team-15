@@ -66,7 +66,7 @@
                 </div>
             </div>
             <!--MODALS-->
-            <div v-for="(comp,key) in competitions" v-if="key === viewKey">
+            <div v-for="comp in competitions" v-if=" comp['.key'] === viewKey">
                 <div class="modal">
                     <h2 class="modalTitle">{{ comp.title}}</h2>
                     <span class="closeModal" @click="closeModal(comp)">&times;</span>
