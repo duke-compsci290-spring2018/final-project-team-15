@@ -270,7 +270,8 @@ export default {
                     maxVal = currentVal;
                     compsRef.child(comp['.key']).update({leader: comp.users[i].username});
                 }
-                console.log(currentVal); compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
+                console.log(currentVal); 
+                compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
             }
         },
 
