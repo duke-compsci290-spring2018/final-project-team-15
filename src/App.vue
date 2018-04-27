@@ -177,19 +177,19 @@ export default {
                 return value.toFixed(2).toLocaleString() + "%";
             }
         },
-        getLeader(value){
-            if (value){
-                var max = 0;
-                var maxUser = null;
-                for(var user in value){
-                    if(value[user].currentValue > max){
-                        maxUser = value[user].username;
-                    }
-                }
-                return maxUser;
-            }
-        }
-        
+//        getLeader(value){
+//            if (value){
+//                var max = 0;
+//                var maxUser = null;
+//                for(var user in value){
+//                    if(value[user].currentValue > max){
+//                        maxUser = value[user].username;
+//                    }
+//                }
+//                return maxUser;
+//            }
+//        }
+//        
     },
     mounted (){
         console.log("mounted");
@@ -201,8 +201,8 @@ export default {
         closeCompetitions(){
             for(var i in this.competitions){
                 if(this.competitions[i]["deadline"] <= new Date().getTime()){
-                   var myKey = this.competitions[i]['.key']; compsRef.child(myKey).update({isComplete: true});
-                    
+                    var myKey = this.competitions[i]['.key']; 
+                    compsRef.child(myKey).update({isComplete: true});
                 }
             }  
         },
@@ -228,10 +228,10 @@ export default {
                                 }
                             }
                        })
-                      .catch(error => console.log(error))           
+                      .catch(error => console.log(error));           
         },
 
-        
+        //Buys the correct number of shares for a user joining a competition at the current market prices
         getStockData (url, comp,ticker, percent){
             var initVal = 1000000.0;
             fetch(url).then(response => response.json())
@@ -245,20 +245,21 @@ export default {
                                 u.child("shares").child(ticker).set(ticker +" "+ shares);
                             }
                        })
-                      .catch(error => console.log(error))
+                      .catch(error => console.log(error));
         },
 
-        //calculates the current users value.
+        //calculates the user's current porfolio value.
         getPortVal(comp, pMap){  
             console.log("getPortVal");
+            var maxVal = 0;
             for(var i in comp.users){
-                var maxVal = 0;
                 var currentVal = 0;
                 var userID = comp.users[i].userid;
                 for(var j in comp.users[i].shares){
                     var ticker = comp.users[i].shares[j];
                     var shares = ticker.split(" ")[1];
                     ticker = ticker.split(" ")[0];
+                    //for debugging purposes
 //                    console.log("ticker: " + ticker);
 //                    console.log("shares: " + shares);
 //                    console.log(parseFloat(shares));
@@ -267,9 +268,9 @@ export default {
                 }
                 if(currentVal > maxVal){
                     maxVal = currentVal;
-                    comp.leader = comp.users[i].username;
+                    compsRef.child(comp['.key']).update({leader: comp.users[i].username});
                 }
-               console.log(currentVal); compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
+                console.log(currentVal); compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
             }
         },
 
@@ -277,9 +278,11 @@ export default {
         getUser () {
             return this.user
         },
+        
         setUser (user) {
             this.user = user
         },
+        
         //Helper method to add the available stocks to the comp
         addStocksToComp(){
             var stocksList = [];
@@ -323,12 +326,12 @@ export default {
                     leader: "Not Started",
                     created: currDate,
                     deadline: computedDeadline,
-                    viewModal: false,
                     availStocks: stockArray
                 }).then((data, err)=> { if (err) {console.log(err)}});
-
-
+                
+                //reset options to allow user a blank slate for next competition
                 this.catToAdd = null;
+                this.dateToAdd = null;
             }
         },
 
@@ -344,9 +347,12 @@ export default {
             for(var i in this.competitions){
                 if(this.competitions[i]['.key'] === comp['.key']){
                     this.competitions[i].viewModal = true;
+                    console.log("2: " + this.competitions[i].viewModal);
+                    break;
                 }
             }
             this.getAllPrices(comp);
+            console.log("3: " +  this.competitions[i].viewModal);
         },
 
         //closes teh modal view
@@ -355,6 +361,7 @@ export default {
             for(var i in this.competitions){
                 if(this.competitions[i]['.key'] === comp['.key']){
                     this.competitions[i].viewModal = false;
+                    break;
                 }
             }
         },
@@ -411,16 +418,14 @@ export default {
                                        );
                     }
                 }
-
                 //reset selected stocks ammounts
                 this.selectedStocks = [0,0,0,0,0,0,0,0,0,0];
-
-                //this.getPortVal(comp);
 
             } else {
                 alert("Make sure selections add up to 100%");
             }
         },
+        
         //calculate how many shares of a stock that a user can buy at the current price
         calcShares(ticker, percent,comp,userObject){
             var key = "LSL4TQ54M83DX4NV";
