@@ -231,7 +231,7 @@ export default {
                       .catch(error => console.log(error))           
         },
 
-
+        
         getStockData (url, comp,ticker, percent){
             var initVal = 1000000.0;
             fetch(url).then(response => response.json())
