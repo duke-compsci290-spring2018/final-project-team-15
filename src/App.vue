@@ -176,44 +176,39 @@ export default {
             if (value){
                 return value.toFixed(2).toLocaleString() + "%";
             }
+        },
+        getLeader(value){
+            if (value){
+                var max = 0;
+                var maxUser = null;
+                for(var user in value){
+                    if(value[user].currentValue > max){
+                        maxUser = value[user].username;
+                    }
+                }
+                return maxUser;
+            }
         }
+        
     },
     mounted (){
         console.log("mounted");
-        //this.getKeys();
-        this.getAllPrices();
-        
+        this.closeCompetitions();
     },
     methods: {
-//        getKeys(){
-//            compsRef.once('value').then(function(snap) {
-//                snap.forEach(function(child){
-//                    compKeys.push(child.key);
-//                })
-//            }).then(this.getAllPrices());    
-//        },
         
-//        //update everyones portfolio value
-//        updateAllValues(){
-//            console.log("updating all values");
-//            //console.log(this.competitions);
-//            console.log(compKeys);
-//            console.log(compKeys.length);
-//            for(var j = 0; j < compKeys.length; j++){
-//                console.log(j);
-//                var comp = compsRef.child(compKeys[j]);
-//                this.getPortVal(comp);
-//            }
-////            
-////            
-////            for(var i in this.competitions){
-////                console.log(this.competitions[i]);
-////                this.getPortVal(this.competitions[i]);
-////            }
-//        },
+        //close all of the competitions that have expired
+        closeCompetitions(){
+            for(var i in this.competitions){
+                if(this.competitions[i]["deadline"] <= new Date().getTime()){
+                   var myKey = this.competitions[i]['.key']; compsRef.child(myKey).update({isComplete: true});
+                    
+                }
+            }  
+        },
         
         //gets the data from a url
-        getAllPrices(){
+        getAllPrices(comp){
             console.log("getAllPrices");
             var allStocks = techStocks.toString() +","+ largeCapStocks.toString() ;//+ cryptoStocks;
             var key = "LSL4TQ54M83DX4NV";
@@ -222,13 +217,17 @@ export default {
             fetch(url).then(response => response.json())
                       .then(data => {
                             if(data){
+                                var newPriceMap = {};
                                 for(var j = 0; j < data["Stock Quotes"].length; j++){
                                     var symbol = data["Stock Quotes"][j]["1. symbol"];
                                     var price = data["Stock Quotes"][j]["2. price"];
-                                    this.priceMap[symbol] = parseFloat(price);
+                                    newPriceMap[symbol] = parseFloat(price);
+                                    if(j === data["Stock Quotes"].length - 1){
+                                        this.getPortVal(comp,newPriceMap);
+                                    }
                                 }
                             }
-                       }).then(console.log(this.priceMap))
+                       })
                       .catch(error => console.log(error))           
         },
 
@@ -250,25 +249,29 @@ export default {
         },
 
         //calculates the current users value.
-        getPortVal(comp){  
+        getPortVal(comp, pMap){  
             console.log("getPortVal");
             for(var i in comp.users){
+                var maxVal = 0;
                 var currentVal = 0;
                 var userID = comp.users[i].userid;
                 for(var j in comp.users[i].shares){
                     var ticker = comp.users[i].shares[j];
                     var shares = ticker.split(" ")[1];
                     ticker = ticker.split(" ")[0];
-                    console.log("ticker: " + ticker);
-                    console.log("shares: " + shares);
-                    console.log(parseFloat(shares));
-                    console.log(this.priceMap[ticker]);
-                    currentVal += parseFloat(shares) * this.priceMap[ticker];               
+//                    console.log("ticker: " + ticker);
+//                    console.log("shares: " + shares);
+//                    console.log(parseFloat(shares));
+//                    console.log(pMap[ticker]);
+                    currentVal += parseFloat(shares) * pMap[ticker];               
+                }
+                if(currentVal > maxVal){
+                    maxVal = currentVal;
+                    comp.leader = comp.users[i].username;
                 }
                console.log(currentVal); compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
             }
         },
-
 
         // allow child component to change user value
         getUser () {
@@ -343,7 +346,7 @@ export default {
                     this.competitions[i].viewModal = true;
                 }
             }
-            this.getPortVal(comp);
+            this.getAllPrices(comp);
         },
 
         //closes teh modal view
@@ -374,6 +377,7 @@ export default {
                 alert("You must be logged in to join");
             }
         },
+        
         //submits the stocks the user wants to enter in the competition
         submitPicks(comp){
             var sum = 0;
