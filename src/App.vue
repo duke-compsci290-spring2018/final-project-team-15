@@ -1,5 +1,5 @@
 <template>
-<div id="app">
+<div v-if="!hidden" id="app">
      <header>
         <nav class="navbar navbar-inverse">
             <div class="container-fluid">
@@ -24,7 +24,7 @@
                         <option> Crypto</option>
                         <option> By Sector</option>
                     </select>
-                    
+
                     <label> Choose a Timeframe</label>
                     <select v-model="timeToAdd">
                         <option disabled value =""> Please select one</option>
@@ -44,15 +44,15 @@
                         <li v-for="comp in competitions">
                             <div class="compView">
                                 <!--this text comes from the todo item's text-->
-                                
+
                                 <h2 class="compTitle">{{ comp.title }}</h2>
-                                
+
                                 <p>Leader: {{ comp.leader }}</p>
-                                
+
                                 <p>Created: {{ comp.created | formatDate}}</p>
-                                
+
                                 <P>Expires: {{ comp.deadline | formatDate}}</P>
-                                
+
                                 <div class="userButtons">
                                     <button @click="viewComp(comp)">View
                                     </button>
@@ -77,7 +77,7 @@
                         </ul>
                     </div>
                     <div class="modalBox">
-                    
+
                         <h3> Leader Board</h3>
                         <ul>
                             <li v-for="user in comp.users"> {{user.username}}  {{user.currentValue | formatCurr}}  {{((user.currentValue - 1000000)/1000000)*100 | formatPer}}</li>
@@ -100,23 +100,26 @@
         </section>
     </main>
 </div>
+<div v-else id="userProfile">
+  <Profile :currentUser="this.user"></Profile>
+</div>
 </template>
 
 <script>
 import { storageRef, compsRef, choicesRef} from './database'
 import Authentication from './components/Authentication'
+import Profile from './Profile'
 //import AddImageForm from './components/AddImageForm'
 //import VueImages from 'vue-images'
-    
+
 //cache latest version for synchronist calls
 var latestStocksSnapshot = null;
 var techStocks = [];
 var largeCapStocks = [];
 var cryptoStocks = [];
 var bySectorStocks = [];
-        
-choicesRef.on('value', function(snap) { 
-    latestStocksSnapshot = snap; 
+choicesRef.on('value', function(snap) {
+    latestStocksSnapshot = snap;
     snap.forEach(function(child) {
         child.forEach(function(childchild){            
             if(child.key === 'tech'){
@@ -127,11 +130,11 @@ choicesRef.on('value', function(snap) {
                 cryptoStocks.push(childchild.val());
             } else if (child.key === 'bySector'){
                 bySectorStocks.push(childchild.val());
-            }     
+            }
         });
     });
 });
-    
+
 export default {
     name: 'App',
     data () {
@@ -143,6 +146,7 @@ export default {
             currentUid: null,
             userJoining: false,
             selectedStocks: [0,0,0,0,0,0,0,0,0,0],
+            hidden: false,
             priceMap: {}
         }
     },
@@ -151,7 +155,8 @@ export default {
         choices: choicesRef
     },
     components: {
-        Authentication
+        Authentication,
+        Profile
     },
     filters:{
         formatDate(value){
@@ -174,7 +179,6 @@ export default {
         this.getAllPrices()
     },
     methods: {
-        
         //update everyones portfolio value
         updateAllValues(){
             for(var i in this.competitions){
@@ -189,7 +193,7 @@ export default {
             var allStocks = techStocks.toString() +","+ largeCapStocks.toString() ;//+ cryptoStocks;
             var key = "LSL4TQ54M83DX4NV";
             var url = "https://www.alphavantage.co/query?function=BATCH_STOCK_QUOTES&symbols="+allStocks+"&apikey="+key;
-            
+
             fetch(url).then(response => response.json())
                       .then(data => {
                             if(data){
@@ -202,8 +206,8 @@ export default {
                        }).then(this.updateAllValues)
                       .catch(error => console.log(error))           
         },
-        
-        
+
+
         getStockData (url, comp,ticker, percent){
             var initVal = 1000000.0;
             fetch(url).then(response => response.json())
@@ -217,9 +221,9 @@ export default {
                                 u.child("shares").child(ticker).set(ticker +" "+ shares);
                             }
                        })
-                      .catch(error => console.log(error))            
+                      .catch(error => console.log(error))
         },
-        
+
         //calculates the current users value.
         getPortVal(comp){  
             console.log("getPortVal");
@@ -239,8 +243,8 @@ export default {
                console.log(currentVal); compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
             }
         },
-                
-        
+
+
         // allow child component to change user value
         getUser () {
             return this.user
@@ -260,9 +264,9 @@ export default {
             } else if (this.catToAdd === 'By Sector'){
                 return bySectorStocks;
             }
-            return [];  
+            return [];
         },
-        
+
         //Helper function used to set deadline
         addTime() {
             var dayVal = 1000 * 60 * 60 * 24;
@@ -276,7 +280,7 @@ export default {
                 return dayVal * 31;
             }
         },
-        
+
         // Adds a competition to the website
         addComp() {
             //TODO: only admins & logged in users can do this function
@@ -286,7 +290,7 @@ export default {
                 var computedDeadline = currDate + this.addTime();
                 var stockArray = this.addStocksToComp();
                 compsRef.push({
-                    isCompleted: false,     
+                    isCompleted: false,
                     title: this.catToAdd,
                     leader: "Not Started",
                     created: currDate,
@@ -294,28 +298,28 @@ export default {
                     viewModal: false,
                     availStocks: stockArray
                 }).then((data, err)=> { if (err) {console.log(err)}});
-                
-                
+
+
                 this.catToAdd = null;
             }
         },
-            
+
         // Allows admin to delete a competition
         deleteComp(comp){
             compsRef.child(comp['.key']).remove();
         },
-                
+
         // allows user to view an ongoing competition
         viewComp(comp) {
             console.log("viewing competition");
             compsRef.child(comp['.key']).update({viewModal: true});
         },
-        
+
         //closes teh modal view
         closeModal(comp) {
             compsRef.child(comp['.key']).update({viewModal: false});
         },
-        
+
         //allows user to join a competition
         joinComp(comp){
             if(this.user){
@@ -324,12 +328,12 @@ export default {
                     if(comp.users[i].userid === this.user.uid){
                         userAlreadyJoined = true;
                         alert("You have already joined this competition");
-                    } 
+                    }
                 }
                 if(!userAlreadyJoined){
                     console.log("user is joining competition")
                     this.userJoining = true;
-                }   
+                }
             } else {
                 alert("You must be logged in to join");
             }
@@ -346,11 +350,11 @@ export default {
             if(sum === 100.0){
                 //close the joining modal
                 this.userJoining = false;
-                
+
                 for(var j = 0; j <this.selectedStocks.length; j++){
-                    map[comp.availStocks[j]] = parseFloat(this.selectedStocks[j]);  
+                    map[comp.availStocks[j]] = parseFloat(this.selectedStocks[j]);
                 }
-                var userObject = {username: this.user.name, 
+                var userObject = {username: this.user.name,
                                     userid: this.user.uid,
                                     useremail: this.user.email,
                                     currentValue: 1000000,
@@ -358,21 +362,21 @@ export default {
                                 };
                 //compsRef.child(comp['.key']).child("users").push(userObject);
                 compsRef.child(comp['.key']).child("users").child(this.user.uid).set(userObject);
-                
+
                 for(var j = 0; j <this.selectedStocks.length; j++){
                     if(parseFloat(this.selectedStocks[j]) !== 0){
                         this.calcShares(comp.availStocks[j], parseFloat(this.selectedStocks[j]),
                                        comp,
                                         userObject
-                                       );   
+                                       );
                     }
                 }
-                
+
                 //reset selected stocks ammounts
                 this.selectedStocks = [0,0,0,0,0,0,0,0,0,0];
-                
+
                 //this.getPortVal(comp);
-                
+
             } else {
                 alert("Make sure selections add up to 100%");
             }
