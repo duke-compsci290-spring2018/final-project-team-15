@@ -148,7 +148,8 @@ export default {
             userJoining: false,
             //selectedStocks: [null,null,null,null,null,null,null,null,null,null]
             selectedStocks: [0,0,0,0,0,0,0,0,0,0],
-            hidden: false
+            hidden: false,
+            priceMap: {}
         }
     },
     firebase: {
@@ -167,10 +168,31 @@ export default {
         }
     },
     mounted (){
-        //this.calcShares("MSFT", 100);
+        this.getAllPrices();
     },
     methods: {
         //gets the data from a url
+
+        getAllPrices(){
+            console.log("getALlPrices");
+            var allStocks = techStocks.toString() +","+ largeCapStocks.toString() ;//+ cryptoStocks;
+            var key = "LSL4TQ54M83DX4NV";
+            var url = "https://www.alphavantage.co/query?function=BATCH_STOCK_QUOTES&symbols="+allStocks+"&apikey="+key;
+
+            fetch(url).then(response => response.json())
+                      .then(data => {
+                            if(data){
+                                for(var j = 0; j < data["Stock Quotes"].length; j++){
+                                    var symbol = data["Stock Quotes"][j]["1. symbol"];
+                                    var price = data["Stock Quotes"][j]["2. price"];
+                                    this.priceMap[symbol] = parseFloat(price);
+                                }
+                            }
+                       })
+                      .catch(error => console.log(error))
+        },
+
+
         getStockData (url, comp,ticker, percent){
             var initVal = 1000000.0;
             fetch(url).then(response => response.json())
@@ -189,65 +211,17 @@ export default {
 
         //calculates the current users value.
         getPortVal(comp){
-            console.log("getting value!!");
             for(var i in comp.users){
-                var userBank = 0;
+                var currentVal = 0;
                 var userID = comp.users[i].userid;
-
-                var promiseArray = [];
-
                 for(var j in comp.users[i].shares){
-
                     var ticker = comp.users[i].shares[j];
                     var shares = ticker.split(" ")[1];
                     ticker = ticker.split(" ")[0];
-                    var key = "LSL4TQ54M83DX4NV";
-                    var url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&interval=1min&apikey=" + key;
-
-                    promiseArray.push(new Promise(function(resolve, reject) {
-
-                        fetch(url).then(response => response.json()).then(data => {
-                            if(data){
-                                var lastTime = data["Meta Data"]["3. Last Refreshed"];
-                                lastTime = lastTime.slice(0, -2) + "00";
-                                var price = parseFloat(data["Time Series (1min)"][lastTime]["4. close"]);
-                                console.log("ticker: " + ticker);
-                                console.log("price: " + price);
-                                console.log("shares: "+shares);
-//                        userBank += price * shares;
-//                        compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(userBank);
-
-                                resolve( price * shares);
-                            }
-                        }).catch(error => console.log(error))
-                    }));
+                    currentVal += parseFloat(shares) * this.priceMap[ticker];
                 }
-                const reducer = (accumulator, currentValue) => accumulator + currentValue;
-
-                Promise.all(promiseArray).then(console.log("resolved")).then(
-                    console.log(promiseArray.reduce(reducer))
-                );
+               console.log(currentVal); compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
             }
-        },
-
-        //
-        callAPI(url, ticker, shares, userID, comp, userBank){
-            fetch(url).then(response => response.json())
-              .then(data => {
-                    if(data){
-                        var lastTime = data["Meta Data"]["3. Last Refreshed"];
-                        lastTime = lastTime.slice(0, -2) + "00";
-                        var price = parseFloat(data["Time Series (1min)"][lastTime]["4. close"]);
-                        console.log("ticker: " + ticker);
-                        console.log("price: " + price);
-                        console.log("shares: "+shares);
-//                        userBank += price * shares;
-//                        compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(userBank);
-
-                        resolve( price * shares);
-                    }
-               })
-              .catch(error => console.log(error))
         },
 
 
@@ -382,7 +356,7 @@ export default {
                 //reset selected stocks ammounts
                 this.selectedStocks = [0,0,0,0,0,0,0,0,0,0];
 
-                this.getPortVal(comp);
+                //this.getPortVal(comp);
 
             } else {
                 alert("Make sure selections add up to 100%");
