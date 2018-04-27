@@ -80,7 +80,7 @@
                     
                         <h3> Leader Board</h3>
                         <ul>
-                            <li v-for="user in comp.users"> {{user.username}}</li>
+                            <li v-for="user in comp.users"> {{user.username}}  {{user.currentValue | formatCurr}}  {{((user.currentValue - 1000000)/1000000)*100 | formatPer}}</li>
                         </ul>
                         <button @click="getPortVal(comp)">Update values</button>
                     </div>
@@ -118,8 +118,7 @@ var bySectorStocks = [];
 choicesRef.on('value', function(snap) { 
     latestStocksSnapshot = snap; 
     snap.forEach(function(child) {
-        child.forEach(function(childchild){
-            //console.log(childchild.key+": "+childchild.val());              
+        child.forEach(function(childchild){            
             if(child.key === 'tech'){
                 techStocks.push(childchild.val());
             } else if(child.key === 'largeCap'){
@@ -159,14 +158,32 @@ export default {
             if (value) {
                 return new Date(value).toDateString();
             }
+        },
+        formatCurr(value){
+            if (value){
+                return "$" + value.toFixed(2).toLocaleString();
+            }
+        },
+        formatPer(value){
+            if (value){
+                return value.toFixed(2).toLocaleString() + "%";
+            }
         }
     },
     mounted (){
-        this.getAllPrices();
+        this.getAllPrices()
     },
     methods: {
-        //gets the data from a url 
         
+        //update everyones portfolio value
+        updateAllValues(){
+            for(var i in this.competitions){
+                console.log(this.competitions[i]);
+                this.getPortVal(this.competitions[i]);
+            }
+        },
+        
+        //gets the data from a url
         getAllPrices(){
             console.log("getALlPrices");
             var allStocks = techStocks.toString() +","+ largeCapStocks.toString() ;//+ cryptoStocks;
@@ -182,7 +199,7 @@ export default {
                                     this.priceMap[symbol] = parseFloat(price);
                                 }
                             }
-                       })
+                       }).then(this.updateAllValues)
                       .catch(error => console.log(error))           
         },
         
@@ -205,6 +222,7 @@ export default {
         
         //calculates the current users value.
         getPortVal(comp){  
+            console.log("getPortVal");
             for(var i in comp.users){
                 var currentVal = 0;
                 var userID = comp.users[i].userid;
@@ -212,6 +230,10 @@ export default {
                     var ticker = comp.users[i].shares[j];
                     var shares = ticker.split(" ")[1];
                     ticker = ticker.split(" ")[0];
+                    console.log("ticker: " + ticker);
+                    console.log("shares: " + shares);
+                    console.log(parseFloat(shares));
+                    console.log(this.priceMap[ticker]);
                     currentVal += parseFloat(shares) * this.priceMap[ticker];
                 }
                console.log(currentVal); compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
@@ -299,7 +321,6 @@ export default {
             if(this.user){
                 var userAlreadyJoined = false;
                 for(var i in comp.users){
-                    console.log(comp.users[i].userid);
                     if(comp.users[i].userid === this.user.uid){
                         userAlreadyJoined = true;
                         alert("You have already joined this competition");
@@ -332,7 +353,7 @@ export default {
                 var userObject = {username: this.user.name, 
                                     userid: this.user.uid,
                                     useremail: this.user.email,
-                                    value: 0,
+                                    currentValue: 1000000,
                                     stocksMap: map
                                 };
                 //compsRef.child(comp['.key']).child("users").push(userObject);
