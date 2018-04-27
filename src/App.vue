@@ -228,7 +228,7 @@ export default {
                                     this.priceMap[symbol] = parseFloat(price);
                                 }
                             }
-                       })
+                       }).then(console.log(this.priceMap))
                       .catch(error => console.log(error))           
         },
 
@@ -263,7 +263,7 @@ export default {
                     console.log("shares: " + shares);
                     console.log(parseFloat(shares));
                     console.log(this.priceMap[ticker]);
-                    currentVal += parseFloat(shares) * this.priceMap[ticker];
+                    currentVal += parseFloat(shares) * this.priceMap[ticker];               
                 }
                console.log(currentVal); compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
             }
