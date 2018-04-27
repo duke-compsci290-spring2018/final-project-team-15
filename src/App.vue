@@ -134,6 +134,9 @@ choicesRef.on('value', function(snap) {
         });
     });
 });
+var compKeys = [];
+
+    
 
 export default {
     name: 'App',
@@ -176,20 +179,42 @@ export default {
         }
     },
     mounted (){
-        this.getAllPrices()
+        console.log("mounted");
+        //this.getKeys();
+        this.getAllPrices();
+        
     },
     methods: {
-        //update everyones portfolio value
-        updateAllValues(){
-            for(var i in this.competitions){
-                console.log(this.competitions[i]);
-                this.getPortVal(this.competitions[i]);
-            }
-        },
+//        getKeys(){
+//            compsRef.once('value').then(function(snap) {
+//                snap.forEach(function(child){
+//                    compKeys.push(child.key);
+//                })
+//            }).then(this.getAllPrices());    
+//        },
+        
+//        //update everyones portfolio value
+//        updateAllValues(){
+//            console.log("updating all values");
+//            //console.log(this.competitions);
+//            console.log(compKeys);
+//            console.log(compKeys.length);
+//            for(var j = 0; j < compKeys.length; j++){
+//                console.log(j);
+//                var comp = compsRef.child(compKeys[j]);
+//                this.getPortVal(comp);
+//            }
+////            
+////            
+////            for(var i in this.competitions){
+////                console.log(this.competitions[i]);
+////                this.getPortVal(this.competitions[i]);
+////            }
+//        },
         
         //gets the data from a url
         getAllPrices(){
-            console.log("getALlPrices");
+            console.log("getAllPrices");
             var allStocks = techStocks.toString() +","+ largeCapStocks.toString() ;//+ cryptoStocks;
             var key = "LSL4TQ54M83DX4NV";
             var url = "https://www.alphavantage.co/query?function=BATCH_STOCK_QUOTES&symbols="+allStocks+"&apikey="+key;
@@ -203,7 +228,7 @@ export default {
                                     this.priceMap[symbol] = parseFloat(price);
                                 }
                             }
-                       }).then(this.updateAllValues)
+                       })
                       .catch(error => console.log(error))           
         },
 
@@ -311,13 +336,24 @@ export default {
 
         // allows user to view an ongoing competition
         viewComp(comp) {
-            console.log("viewing competition");
-            compsRef.child(comp['.key']).update({viewModal: true});
+            console.log("viewing a competition");
+            //compsRef.child(comp['.key']).update({viewModal: true});
+            for(var i in this.competitions){
+                if(this.competitions[i]['.key'] === comp['.key']){
+                    this.competitions[i].viewModal = true;
+                }
+            }
+            this.getPortVal(comp);
         },
 
         //closes teh modal view
         closeModal(comp) {
-            compsRef.child(comp['.key']).update({viewModal: false});
+            //compsRef.child(comp['.key']).update({viewModal: false});
+            for(var i in this.competitions){
+                if(this.competitions[i]['.key'] === comp['.key']){
+                    this.competitions[i].viewModal = false;
+                }
+            }
         },
 
         //allows user to join a competition
