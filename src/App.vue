@@ -106,7 +106,7 @@
 </template>
 
 <script>
-import { storageRef, compsRef, choicesRef} from './database'
+import { storageRef, compsRef, choicesRef, winsRef} from './database'
 import Authentication from './components/Authentication'
 import Profile from './Profile'
 //import AddImageForm from './components/AddImageForm'
@@ -136,7 +136,6 @@ choicesRef.on('value', function(snap) {
 });
 var compKeys = [];
 
-    
 
 export default {
     name: 'App',
@@ -156,7 +155,8 @@ export default {
     },
     firebase: {
         competitions: compsRef,
-        choices: choicesRef
+        choices: choicesRef,
+        wins: winsRef
     },
     components: {
         Authentication,
@@ -178,35 +178,32 @@ export default {
                 return value.toFixed(2).toLocaleString() + "%";
             }
         },
-//        getLeader(value){
-//            if (value){
-//                var max = 0;
-//                var maxUser = null;
-//                for(var user in value){
-//                    if(value[user].currentValue > max){
-//                        maxUser = value[user].username;
-//                    }
-//                }
-//                return maxUser;
-//            }
-//        }
-//        
     },
     mounted (){
         console.log("mounted");
         this.closeCompetitions();
     },
     methods: {
-        
-        //close all of the competitions that have expired
+        // close all of the competitions that have expired
         closeCompetitions(){
-            for(var i in this.competitions){
-                if(this.competitions[i]["deadline"] <= new Date().getTime()){
-                    var myKey = this.competitions[i]['.key']; 
-                    compsRef.child(myKey).update({isComplete: true});
-                }
-            }  
+            console.log("closing competitions");
+            compsRef.once('value')
+                .then(function(snapshot){
+                    snapshot.forEach(function(child){
+                        if(child.child("deadline").val() <= new Date().getTime()){
+                            compsRef.child(child.key).update({isComplete: true});
+                            // add the compKey as the key under cmpsWon, add the comps deadline as the value
+                            winsRef.child(child.child("leaderID").val()).child("compsWon").child(child.key).set(child.child("deadline").val());
+                        }                  
+                    })
+                                     
+                })
         },
+        
+        testFunc(){
+            console.log("testFunc");
+        },
+        
         
         //gets the data from a url
         getAllPrices(comp){
@@ -270,6 +267,7 @@ export default {
                 if(currentVal > maxVal){
                     maxVal = currentVal;
                     compsRef.child(comp['.key']).update({leader: comp.users[i].username});
+                    compsRef.child(comp['.key']).update({leaderID: comp.users[i].userid});
                 }
                 console.log(currentVal); 
                 compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
@@ -323,9 +321,10 @@ export default {
                 var computedDeadline = currDate + this.addTime();
                 var stockArray = this.addStocksToComp();
                 compsRef.push({
-                    isCompleted: false,
+                    isComplete: false,
                     title: this.catToAdd,
                     leader: "Not Started",
+                    leaderID: "N/A",
                     created: currDate,
                     deadline: computedDeadline,
                     availStocks: stockArray
@@ -344,12 +343,9 @@ export default {
 
         // allows user to view an ongoing competition
         viewComp(comp) {
-            console.log("viewing a competition");
-            //compsRef.child(comp['.key']).update({viewModal: true});
             for(var i in this.competitions){
                 if(this.competitions[i]['.key'] === comp['.key']){
                     this.viewKey = comp['.key'];
-                    //this.competitions[i].viewModal = true;
                     break;
                 }
             }
@@ -358,13 +354,6 @@ export default {
 
         //closes teh modal view
         closeModal(comp) {
-            //compsRef.child(comp['.key']).update({viewModal: false});
-//            for(var i in this.competitions){
-//                if(this.competitions[i]['.key'] === comp['.key']){
-//                    this.competitions[i].viewModal = false;
-//                    break;
-//                }
-//            }
             this.viewKey = null;
         },
 
