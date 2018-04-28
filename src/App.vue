@@ -12,6 +12,24 @@
         <hr>
     </header>
     <main>
+      <div id="filter-bar">
+        <button @click="testfn">Click me</button>
+        <p>Select from the below categories to filter by the associated competition type:<p>
+        <div class="toFilter">
+          <!--div class="color-box" :style="{ 'background-color': category[1] }"></div-->
+          <input type="checkbox" id="largeCapFilter" value="Large Cap" v-model="filtered">
+          <label for="largeCapFilter">Large Cap</label>
+
+          <input type="checkbox" id="techFilter" value="Tech" v-model="filtered">
+          <label for="techFilter">Tech</label>
+
+          <input type="checkbox" id="cryptoFilter" value="Crypto" v-model="filtered">
+          <label for="cryptoFilter">Crypto</label>
+
+          <input type="checkbox" id="bySectorFilter" value="By Sector" v-model="filtered">
+          <label for="bySectorFilter">By Sector</label>
+        </div>
+      </div>
         <section class="container">
             <!--MENUBAR-->
             <div class="menuBar" v-cloak>
@@ -41,7 +59,7 @@
             <div class="main" v-cloak >
                 <div class="competitionsBackground">
                     <ul class="compsList">
-                        <li v-for="comp in competitions">
+                        <li v-for="comp in reverseComps" v-if="filtered.indexOf(comp.title)!=-1">
                             <div class="compView">
                                 <!--this text comes from the todo item's text-->
 
@@ -121,7 +139,7 @@ var bySectorStocks = [];
 choicesRef.on('value', function(snap) {
     latestStocksSnapshot = snap;
     snap.forEach(function(child) {
-        child.forEach(function(childchild){            
+        child.forEach(function(childchild){
             if(child.key === 'tech'){
                 techStocks.push(childchild.val());
             } else if(child.key === 'largeCap'){
@@ -150,7 +168,8 @@ export default {
             selectedStocks: [0,0,0,0,0,0,0,0,0,0],
             hidden: false,
             priceMap: {},
-            viewKey: null
+            viewKey: null,
+            filtered: ["Large Cap", "Tech", "Crypto", "By Sector"]
         }
     },
     firebase: {
@@ -179,12 +198,22 @@ export default {
             }
         },
     },
+    computed: {
+      reverseComps() {
+        return this.competitions.slice().reverse();
+      }
+    },
     mounted (){
         console.log("mounted");
         this.closeCompetitions();
     },
     methods: {
         // close all of the competitions that have expired
+        testfn(){
+          console.log(this.filtered);
+          console.log(this.competitions);
+        },
+
         closeCompetitions(){
             console.log("closing competitions");
             compsRef.once('value')
@@ -194,17 +223,17 @@ export default {
                             compsRef.child(child.key).update({isComplete: true});
                             // add the compKey as the key under cmpsWon, add the comps deadline as the value
                             winsRef.child(child.child("leaderID").val()).child("compsWon").child(child.key).set(child.child("deadline").val());
-                        }                  
+                        }
                     })
-                                     
+
                 })
         },
-        
+
         testFunc(){
             console.log("testFunc");
         },
-        
-        
+
+
         //gets the data from a url
         getAllPrices(comp){
             console.log("getAllPrices");
@@ -226,7 +255,7 @@ export default {
                                 }
                             }
                        })
-                      .catch(error => console.log(error));           
+                      .catch(error => console.log(error));
         },
 
         //Buys the correct number of shares for a user joining a competition at the current market prices
@@ -247,7 +276,7 @@ export default {
         },
 
         //calculates the user's current porfolio value.
-        getPortVal(comp, pMap){  
+        getPortVal(comp, pMap){
             console.log("getPortVal");
             var maxVal = 0;
             for(var i in comp.users){
@@ -262,14 +291,14 @@ export default {
 //                    console.log("shares: " + shares);
 //                    console.log(parseFloat(shares));
 //                    console.log(pMap[ticker]);
-                    currentVal += parseFloat(shares) * pMap[ticker];               
+                    currentVal += parseFloat(shares) * pMap[ticker];
                 }
                 if(currentVal > maxVal){
                     maxVal = currentVal;
                     compsRef.child(comp['.key']).update({leader: comp.users[i].username});
                     compsRef.child(comp['.key']).update({leaderID: comp.users[i].userid});
                 }
-                console.log(currentVal); 
+                console.log(currentVal);
                 compsRef.child(comp['.key']).child("users").child(userID).child("currentValue").set(currentVal);
             }
         },
@@ -278,11 +307,11 @@ export default {
         getUser () {
             return this.user
         },
-        
+
         setUser (user) {
             this.user = user
         },
-        
+
         //Helper method to add the available stocks to the comp
         addStocksToComp(){
             var stocksList = [];
@@ -328,8 +357,9 @@ export default {
                     created: currDate,
                     deadline: computedDeadline,
                     availStocks: stockArray
+                    //isFilteredOut: false
                 }).then((data, err)=> { if (err) {console.log(err)}});
-                
+
                 //reset options to allow user a blank slate for next competition
                 this.catToAdd = null;
                 this.timeToAdd = null;
@@ -375,7 +405,7 @@ export default {
                 alert("You must be logged in to join");
             }
         },
-        
+
         //submits the stocks the user wants to enter in the competition
         submitPicks(comp){
             var sum = 0;
@@ -416,7 +446,7 @@ export default {
                 alert("Make sure selections add up to 100%");
             }
         },
-        
+
         //calculate how many shares of a stock that a user can buy at the current price
         calcShares(ticker, percent,comp,userObject){
             var key = "LSL4TQ54M83DX4NV";

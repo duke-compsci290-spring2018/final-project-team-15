@@ -20,6 +20,7 @@ export const storageRef = fbApp.storage().ref()
 export const compsRef = db.ref('competitions');
 export const choicesRef = db.ref('compChoices');
 export const winsRef = db.ref('wins');
+export const picsRef = db.ref('pictures');
 
 // create useful endpoints within the database
 //export const imagesRef = db.ref('images')
