@@ -9,7 +9,7 @@
 
   <div id="image">
     <img :src="userImageSource" alt="Empty Avatar">
-    <label for="files">Upload an Image:</label>
+    <label for="files"><b>Upload an Image:</b></label>
     <input type="file" id="files" name="files[]" />
     <button @click="uploadImage()">Upload Image</button>
   </div>
@@ -30,11 +30,15 @@ export default {
     }
   },
   firebase: {
-    images: picsRef
+      images: {
+        source: picsRef,
+        readyCallback: function() {
+          this.addImage(this.currentUser.uid);
+        }
+      }
   },
 
   mounted () {
-    this.addImage(this.currentUser.uid);
 
     //var im = storageRef.child('images/' + this.currentUser.uid).getDownloadUrl().getResult();
     //console.log(im);
@@ -81,9 +85,11 @@ export default {
 
     pushUserImage(url) {
       picsRef.child(this.currentUser.uid).set({url: url, id: this.currentUser.uid}).then((data,err) => {if (err) {console.log(err)}});
+      this.addImage(this.currentUser.uid);
     },
 
     addImage(userId) {
+      /*
       var src = null;
       picsRef.once("value").then(function(snapshot) {
         snapshot.forEach(function(child) {
@@ -95,16 +101,17 @@ export default {
       }).then(
         this.userImageSource = src
       );
+      */
 
-      /*
+      console.log("images is " + this.images);
       for (var i=0; i<this.images.length; i++) {
         console.log(this.images[i]);
         if (this.images[i].id === this.currentUser.uid) {
           this.userImageSource = this.images[i].url;
         }
       }
-      console.log(this.userImageSource);
-      */
+      console.log(this.userImageSource, "");
+
     },
 
     backToMainView() {
@@ -119,7 +126,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 #userInfo {
   text-align: center;
 }
@@ -127,7 +134,19 @@ export default {
 #image {
   padding-top: 20px;
   text-align: center;
-  margin: auto;
-  width: 300px;
+}
+
+#image button, input, label {
+  margin-top: 20px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: 500px;
 }
 </style>
