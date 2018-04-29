@@ -31,11 +31,11 @@
             <input type="checkbox" id="techFilter" value="Tech" v-model="filtered">
             <label for="techFilter">Tech</label>
 
-            <input type="checkbox" id="cryptoFilter" value="Crypto" v-model="filtered">
-            <label for="cryptoFilter">Crypto</label>
+            <input type="checkbox" id="finFilter" value="Financials" v-model="filtered">
+            <label for="finFilter">Financials</label>
 
-            <input type="checkbox" id="bySectorFilter" value="By Sector" v-model="filtered">
-            <label for="bySectorFilter">By Sector</label>
+            <input type="checkbox" id="consFilter" value="Consumer Discretionary" v-model="filtered">
+            <label for="consFilter">Consumer Discretionary</label>
           </div>
     </div>
     <section class="container">
@@ -47,8 +47,8 @@
                         <option disabled value =""> Please select one</option>
                         <option> Large Cap</option>
                         <option> Tech</option>
-                        <option> Crypto</option>
-                        <option> By Sector</option>
+                        <option> Financials</option>
+                        <option> Consumer Discretionary</option>
                     </select>
 
           <label> Choose a Timeframe</label>
@@ -155,8 +155,8 @@ export const newsapi = new NewsAPI("ffd0c03639294db3a9cc46b7d03a0fd3");
 var latestStocksSnapshot = null;
 var techStocks = [];
 var largeCapStocks = [];
-var cryptoStocks = [];
-var bySectorStocks = [];
+var finStocks = [];
+var consStocks = [];
 choicesRef.on('value', function(snap) {
   latestStocksSnapshot = snap;
   snap.forEach(function(child) {
@@ -165,10 +165,10 @@ choicesRef.on('value', function(snap) {
         techStocks.push(childchild.val());
       } else if (child.key === 'largeCap') {
         largeCapStocks.push(childchild.val());
-      } else if (child.key === 'crypto') {
-        cryptoStocks.push(childchild.val());
-      } else if (child.key === 'bySector') {
-        bySectorStocks.push(childchild.val());
+      } else if (child.key === 'Financials') {
+        finStocks.push(childchild.val());
+      } else if (child.key === 'Consumer Discretionary') {
+        consStocks.push(childchild.val());
       }
     });
   });
@@ -190,7 +190,7 @@ export default {
       hidden: false,
       priceMap: {},
       viewKey: null,
-      filtered: ["Large Cap", "Tech", "Crypto", "By Sector"],
+      filtered: ["Large Cap", "Tech", "Financials", "Consumer Discretionary"],
       newsHeadlines: [],
       projectStyle: {
         backgroundColor: '#00ccff',
@@ -261,6 +261,7 @@ export default {
                   newVal += shares * lastPrice;
               }
               console.log("compKey: "+compKey);
+              console.log("newVal: " +newVal);
               compsRef.child(compKey).child("users").child(currUser).update({currentValue: newVal});
               if (newVal > maxVal) {
                   maxVal = newVal;
@@ -299,6 +300,7 @@ export default {
         .then(function(snapshot) {
           snapshot.forEach(function(child) {
             if (child.child("deadline").val() <= new Date().getTime() && child.child("isComplete") === false) {
+              console.log("COMPEITION EXPIRED");
               compsRef.child(child.key).update({
                 isComplete: true
               });
@@ -313,7 +315,7 @@ export default {
     //gets the data from a url
     getAllPrices(comp) {
       console.log("getAllPrices");
-      var allStocks = techStocks.toString() + "," + largeCapStocks.toString(); //+ cryptoStocks;
+      var allStocks = techStocks.toString() + "," + largeCapStocks.toString()+ "," + finStocks.toString() + "," + consStocks.toString();
       var key = "LSL4TQ54M83DX4NV";
       var url = "https://www.alphavantage.co/query?function=BATCH_STOCK_QUOTES&symbols=" + allStocks + "&apikey=" + key;
 
@@ -370,10 +372,10 @@ export default {
         return techStocks;
       } else if (this.catToAdd === 'Large Cap') {
         return largeCapStocks;
-      } else if (this.catToAdd === 'Crypto') {
-        return cryptoStocks;
-      } else if (this.catToAdd === 'By Sector') {
-        return bySectorStocks;
+      } else if (this.catToAdd === 'Financials') {
+        return finStocks;
+      } else if (this.catToAdd === 'Consumer Discretionary') {
+        return consStocks;
       }
       return [];
     },
@@ -414,10 +416,10 @@ export default {
             console.log(err)
           }
         });
-
         //reset options to allow user a blank slate for next competition
         this.catToAdd = null;
         this.timeToAdd = null;
+        this.updateAllComps();
       }
     },
 
