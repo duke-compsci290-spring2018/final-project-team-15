@@ -13,12 +13,30 @@
     <input type="file" id="files" name="files[]" />
     <button @click="uploadImage()">Upload Image</button>
   </div>
+  <hr>
+  <div id="competitionStatus">
+    <h3>Your Competitions:</h3>
+    <ul id="userComps">
+      <li v-for="comp in competitions" v-if="comp.users">
+        <div class="compView" v-for="user in comp.users" v-if="user.userid === currentUser.uid">
+          <h4>{{ comp.title }}</h4>
+          <ul class="compData">
+            <li><b> Portfolio value: </b> ${{ user.currentValue }}</li>
+            <span><b> Shares owned: </b></span>
+            <ul class="sharesOwned">
+              <li v-for="share in user.shares">{{ share }}</li>
+            </ul>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </div>
 
 </div>
 </template>
 
 <script>
-import { storageRef, picsRef } from './database'
+import { storageRef, picsRef, compsRef } from './database'
 //var storageRef = firebase.storage().ref();
 
 export default {
@@ -35,6 +53,9 @@ export default {
         readyCallback: function() {
           this.addImage(this.currentUser.uid);
         }
+      },
+      competitions: {
+        source: compsRef
       }
   },
 
@@ -56,6 +77,7 @@ export default {
   // methods provided to change value of user in parent component
   props: [
     'currentUser',
+    'isLoggedIn'
   ],
   // let HTML template access user as if it were a variable in this component
   computed: {
@@ -127,6 +149,22 @@ export default {
 </script>
 
 <style scoped>
+
+#profile {
+  height: 100%;
+}
+
+#competitionStatus {
+  text-align: center;
+}
+
+.compView {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: auto;
+}
+
 #userInfo {
   text-align: center;
 }

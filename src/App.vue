@@ -196,7 +196,7 @@ export default {
       newsHeadlines: [],
       projectStyle: {
         backgroundColor: '#00ccff',
-        color: '#000000'
+        color: '#000000',
       },
         localPrices: {}
 
