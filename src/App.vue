@@ -116,12 +116,16 @@
         </div>
         <div class="modal" v-if="userJoining">
           <div class="joinContainer">
-            <p> JOIN SCREEN TEMP</p>
             <h3> Available Stocks</h3>
+            <p>Every user starts out with $1,000,000 dollars. It's up to you to decide the best allocation. For each stock you wish to purchase below, enter the percent of your profile you wish to allocate towards it. </p>
             <ul class="availStocks">
-              <li v-for="(ticker,index) in comp.availStocks">{{ticker}}<input v-model="selectedStocks[index]" placeholder="add % up to 100"></li>
+              <li v-for="(ticker,index) in comp.availStocks">{{ticker}}
+                <button @click="googleSearch(ticker)">Get Info</button>
+                <input v-model="selectedStocks[index]" placeholder="add % up to 100">
+              </li>
             </ul>
             <button @click="submitPicks(comp)"> Select Stocks</button>
+            <button @click="cancelJoin(comp)">Go Back</button>
           </div>
         </div>
       </div>
@@ -246,6 +250,14 @@ export default {
   },
   methods: {
 
+
+    // launches google search so user can find info
+    googleSearch(ticker){
+        window.open('http://google.com/search?q='+ticker+" Stock Price");
+    },
+
+
+    /// updates all comps
     updateAllComps(){
         console.log("update all comps");
       for(var i in this.competitions){
@@ -464,6 +476,11 @@ export default {
       } else {
         alert("You must be logged in to join");
       }
+    },
+
+    //cancels a user userJoining
+    cancelJoin(comp) {
+      this.userJoining = false;
     },
 
     //submits the stocks the user wants to enter in the competition
