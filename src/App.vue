@@ -75,7 +75,7 @@
 
                 <p v-if="!(comp.isComplete)">Leader: {{ comp.leader }}</p>
                 <p v-if="(comp.isComplete)">Winner: {{ comp.leader }}</p>
-                  
+
                 <p>Created: {{ comp.created | formatDate}}</p>
 
                 <P  v-if="!(comp.isComplete)">Expires: {{ comp.deadline | formatDate}}</P>
@@ -151,9 +151,6 @@ import Profile from './Profile'
 const NewsAPI = require('newsapi');
 export const newsapi = new NewsAPI("ffd0c03639294db3a9cc46b7d03a0fd3");
 
-//import AddImageForm from './components/AddImageForm'
-//import VueImages from 'vue-images'
-
 //cache latest version for synchronist calls
 var latestStocksSnapshot = null;
 var techStocks = [];
@@ -200,19 +197,17 @@ export default {
         color: '#000000'
       },
         localPrices: {}
-    
+
     }
   },
   firebase: {
-    //competitions: compsRef,
-      
     competitions: {
         source: compsRef,
         readyCallback: function() {
           this.updateAllComps();
         }
     },
-      
+
     choices: choicesRef,
     wins: winsRef
   },
@@ -244,24 +239,19 @@ export default {
   },
   mounted() {
     console.log("mounted");
-    //this.closeCompetitions();
     this.getNewsData();
   },
   methods: {
-      
+
     updateAllComps(){
         console.log("update all comps");
       for(var i in this.competitions){
-//          console.log(this.competitions[i]);
           var compKey = this.competitions[i]['.key'];
-//          console.log(compKey);
           this.getAllPrices(this.competitions[i]);
           var maxVal = 0.0;
           for(var j in this.competitions[i]["users"]){
-//              console.log(this.competitions[i]["users"][j]);
               var currUser = this.competitions[i]["users"][j]["userid"];
               var currUserName = this.competitions[i]["users"][j]["username"];
-//              console.log("currUser: " + currUser);
               var newVal = 0.0;
               //for each "ticker numShares" of a user
               for(var k in this.competitions[i]["users"][j]["shares"]){
@@ -269,13 +259,9 @@ export default {
                   var ticker = (this.competitions[i]["users"][j]["shares"][k]).split(" ")[0];
                   var lastPrice = parseFloat(this.competitions[i]["newestPrices"][ticker]);
                   newVal += shares * lastPrice;
-//                  console.log("ticker: "+ ticker);
-//                  console.log("shares: "+ shares);
-//                  console.log("last price: "+ lastPrice);
               }
-//              console.log("newVal: " + newVal);
               console.log("compKey: "+compKey);
-              compsRef.child(compKey).child("users").child(currUser).update({currentValue: newVal});   
+              compsRef.child(compKey).child("users").child(currUser).update({currentValue: newVal});
               if (newVal > maxVal) {
                   maxVal = newVal;
                   compsRef.child(compKey).update({
@@ -286,10 +272,10 @@ export default {
                   });
                 }
           }
-      }  
-        this.closeCompetitions();    
-    },  
-      
+      }
+        this.closeCompetitions();
+    },
+
     // close all of the competitions that have expired
     testfn() {
       console.log(this.filtered);
@@ -312,7 +298,7 @@ export default {
       compsRef.once('value')
         .then(function(snapshot) {
           snapshot.forEach(function(child) {
-            if (child.child("deadline").val() <= new Date().getTime()) {
+            if (child.child("deadline").val() <= new Date().getTime() && child.child("isComplete") === false) {
               compsRef.child(child.key).update({
                 isComplete: true
               });
@@ -354,13 +340,14 @@ export default {
       fetch(url).then(response => response.json())
         .then(data => {
             var u = compsRef.child(comp['.key']).child("users").child(this.user.uid);
+            console.log(data);
             var lastTime = data["Meta Data"]["3. Last Refreshed"];
             lastTime = lastTime.slice(0, -2) + "00";
             var price = parseFloat(data["Time Series (1min)"][lastTime]["4. close"]);
             var shares = (initVal * (percent / 100.0)) / price;
             u.child("shares").child(ticker).set(ticker + " " + shares);
         })
-        .catch(error => {   
+        .catch(error => {
           console.log(error);
             alert("Your purchase for "+ticker+ " was not completed, please try again or buy a different stock");
             compsRef.child(comp['.key']).child("users").child(this.user.uid).remove();
@@ -484,7 +471,7 @@ export default {
       }
       var map = {};
       if (sum === 100.0) {
-        
+
 
         for (var j = 0; j < this.selectedStocks.length; j++) {
           map[comp.availStocks[j]] = parseFloat(this.selectedStocks[j]);
@@ -508,7 +495,7 @@ export default {
           }
         }
         this.onSuccessfulJoin();
-          
+
       } else {
         alert("Make sure selections add up to 100%");
       }
@@ -521,12 +508,14 @@ export default {
         this.selectedStocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.updateAllComps();
       },
-      
+
     //calculate how many shares of a stock that a user can buy at the current price
     calcShares(ticker, percent, comp, userObject) {
       var key = "LSL4TQ54M83DX4NV";
       var requestURL = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&interval=1min&apikey=" + key;
+      //var requestURL = "https://marketdata.websol.barchart.com/getQuote.jsonp?apikey=9fbc4b4699da90edd8f7a0f35e9ee971&symbols="+ticker;
       var responseJSON = this.getStockData(requestURL, comp, ticker, percent);
+
     },
 
     updateBackground(event) {

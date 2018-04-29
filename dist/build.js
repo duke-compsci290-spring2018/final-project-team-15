@@ -3317,9 +3317,6 @@ function __importDefault(mod) {
 var NewsAPI = __webpack_require__(51);
 var newsapi = new NewsAPI("ffd0c03639294db3a9cc46b7d03a0fd3");
 
-//import AddImageForm from './components/AddImageForm'
-//import VueImages from 'vue-images'
-
 //cache latest version for synchronist calls
 var latestStocksSnapshot = null;
 var techStocks = [];
@@ -3370,8 +3367,6 @@ var compKeys = [];
   },
 
   firebase: {
-    //competitions: compsRef,
-
     competitions: {
       source: __WEBPACK_IMPORTED_MODULE_0__database__["b" /* compsRef */],
       readyCallback: function readyCallback() {
@@ -3410,7 +3405,6 @@ var compKeys = [];
   },
   mounted: function mounted() {
     console.log("mounted");
-    //this.closeCompetitions();
     this.getNewsData();
   },
 
@@ -3418,16 +3412,12 @@ var compKeys = [];
     updateAllComps: function updateAllComps() {
       console.log("update all comps");
       for (var i in this.competitions) {
-        //          console.log(this.competitions[i]);
         var compKey = this.competitions[i]['.key'];
-        //          console.log(compKey);
         this.getAllPrices(this.competitions[i]);
         var maxVal = 0.0;
         for (var j in this.competitions[i]["users"]) {
-          //              console.log(this.competitions[i]["users"][j]);
           var currUser = this.competitions[i]["users"][j]["userid"];
           var currUserName = this.competitions[i]["users"][j]["username"];
-          //              console.log("currUser: " + currUser);
           var newVal = 0.0;
           //for each "ticker numShares" of a user
           for (var k in this.competitions[i]["users"][j]["shares"]) {
@@ -3435,11 +3425,7 @@ var compKeys = [];
             var ticker = this.competitions[i]["users"][j]["shares"][k].split(" ")[0];
             var lastPrice = parseFloat(this.competitions[i]["newestPrices"][ticker]);
             newVal += shares * lastPrice;
-            //                  console.log("ticker: "+ ticker);
-            //                  console.log("shares: "+ shares);
-            //                  console.log("last price: "+ lastPrice);
           }
-          //              console.log("newVal: " + newVal);
           console.log("compKey: " + compKey);
           __WEBPACK_IMPORTED_MODULE_0__database__["b" /* compsRef */].child(compKey).child("users").child(currUser).update({ currentValue: newVal });
           if (newVal > maxVal) {
@@ -3478,7 +3464,7 @@ var compKeys = [];
       console.log("closing competitions");
       __WEBPACK_IMPORTED_MODULE_0__database__["b" /* compsRef */].once('value').then(function (snapshot) {
         snapshot.forEach(function (child) {
-          if (child.child("deadline").val() <= new Date().getTime()) {
+          if (child.child("deadline").val() <= new Date().getTime() && child.child("isComplete") === false) {
             __WEBPACK_IMPORTED_MODULE_0__database__["b" /* compsRef */].child(child.key).update({
               isComplete: true
             });
@@ -3526,6 +3512,7 @@ var compKeys = [];
         return response.json();
       }).then(function (data) {
         var u = __WEBPACK_IMPORTED_MODULE_0__database__["b" /* compsRef */].child(comp['.key']).child("users").child(_this2.user.uid);
+        console.log(data);
         var lastTime = data["Meta Data"]["3. Last Refreshed"];
         lastTime = lastTime.slice(0, -2) + "00";
         var price = parseFloat(data["Time Series (1min)"][lastTime]["4. close"]);
@@ -3700,6 +3687,7 @@ var compKeys = [];
     calcShares: function calcShares(ticker, percent, comp, userObject) {
       var key = "LSL4TQ54M83DX4NV";
       var requestURL = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&interval=1min&apikey=" + key;
+      //var requestURL = "https://marketdata.websol.barchart.com/getQuote.jsonp?apikey=9fbc4b4699da90edd8f7a0f35e9ee971&symbols="+ticker;
       var responseJSON = this.getStockData(requestURL, comp, ticker, percent);
     },
     updateBackground: function updateBackground(event) {
@@ -15788,7 +15776,7 @@ return /******/ (function(modules) { // webpackBootstrap
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_App_vue__ = __webpack_require__(9);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_fa54eba0_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(57);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_629e71b6_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(57);
 function injectStyle (ssrContext) {
   __webpack_require__(30)
 }
@@ -15808,7 +15796,7 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_App_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_fa54eba0_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_629e71b6_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
@@ -15829,7 +15817,7 @@ var content = __webpack_require__(31);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(2)("73e86c1f", content, true, {});
+var update = __webpack_require__(2)("2dda50e2", content, true, {});
 
 /***/ }),
 /* 31 */
