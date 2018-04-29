@@ -18,6 +18,7 @@
     </nav>
     <hr>
   </header>
+  <FAQ></FAQ>
   <main>
     <div id="filter-bar">
       <!--button @click="testfn">Click me</button-->
@@ -147,6 +148,7 @@ import {
   winsRef
 } from './database'
 import Authentication from './components/Authentication'
+import FAQ from './components/FAQ'
 import Profile from './Profile'
 const NewsAPI = require('newsapi');
 export const newsapi = new NewsAPI("ffd0c03639294db3a9cc46b7d03a0fd3");
@@ -213,7 +215,8 @@ export default {
   },
   components: {
     Authentication,
-    Profile
+    Profile,
+    FAQ
   },
   filters: {
     formatDate(value) {
