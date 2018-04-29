@@ -3321,8 +3321,8 @@ var newsapi = new NewsAPI("ffd0c03639294db3a9cc46b7d03a0fd3");
 var latestStocksSnapshot = null;
 var techStocks = [];
 var largeCapStocks = [];
-var cryptoStocks = [];
-var bySectorStocks = [];
+var finStocks = [];
+var consStocks = [];
 __WEBPACK_IMPORTED_MODULE_0__database__["a" /* choicesRef */].on('value', function (snap) {
   latestStocksSnapshot = snap;
   snap.forEach(function (child) {
@@ -3331,10 +3331,10 @@ __WEBPACK_IMPORTED_MODULE_0__database__["a" /* choicesRef */].on('value', functi
         techStocks.push(childchild.val());
       } else if (child.key === 'largeCap') {
         largeCapStocks.push(childchild.val());
-      } else if (child.key === 'crypto') {
-        cryptoStocks.push(childchild.val());
-      } else if (child.key === 'bySector') {
-        bySectorStocks.push(childchild.val());
+      } else if (child.key === 'Financials') {
+        finStocks.push(childchild.val());
+      } else if (child.key === 'Consumer Discretionary') {
+        consStocks.push(childchild.val());
       }
     });
   });
@@ -3355,7 +3355,7 @@ var compKeys = [];
       hidden: false,
       priceMap: {},
       viewKey: null,
-      filtered: ["Large Cap", "Tech", "Crypto", "By Sector"],
+      filtered: ["Large Cap", "Tech", "Financials", "Consumer Discretionary"],
       newsHeadlines: [],
       projectStyle: {
         backgroundColor: '#00ccff',
@@ -3427,6 +3427,7 @@ var compKeys = [];
             newVal += shares * lastPrice;
           }
           console.log("compKey: " + compKey);
+          console.log("newVal: " + newVal);
           __WEBPACK_IMPORTED_MODULE_0__database__["b" /* compsRef */].child(compKey).child("users").child(currUser).update({ currentValue: newVal });
           if (newVal > maxVal) {
             maxVal = newVal;
@@ -3465,6 +3466,7 @@ var compKeys = [];
       __WEBPACK_IMPORTED_MODULE_0__database__["b" /* compsRef */].once('value').then(function (snapshot) {
         snapshot.forEach(function (child) {
           if (child.child("deadline").val() <= new Date().getTime() && child.child("isComplete") === false) {
+            console.log("COMPEITION EXPIRED");
             __WEBPACK_IMPORTED_MODULE_0__database__["b" /* compsRef */].child(child.key).update({
               isComplete: true
             });
@@ -3479,7 +3481,7 @@ var compKeys = [];
     //gets the data from a url
     getAllPrices: function getAllPrices(comp) {
       console.log("getAllPrices");
-      var allStocks = techStocks.toString() + "," + largeCapStocks.toString(); //+ cryptoStocks;
+      var allStocks = techStocks.toString() + "," + largeCapStocks.toString() + "," + finStocks.toString() + "," + consStocks.toString();
       var key = "LSL4TQ54M83DX4NV";
       var url = "https://www.alphavantage.co/query?function=BATCH_STOCK_QUOTES&symbols=" + allStocks + "&apikey=" + key;
 
@@ -3542,10 +3544,10 @@ var compKeys = [];
         return techStocks;
       } else if (this.catToAdd === 'Large Cap') {
         return largeCapStocks;
-      } else if (this.catToAdd === 'Crypto') {
-        return cryptoStocks;
-      } else if (this.catToAdd === 'By Sector') {
-        return bySectorStocks;
+      } else if (this.catToAdd === 'Financials') {
+        return finStocks;
+      } else if (this.catToAdd === 'Consumer Discretionary') {
+        return consStocks;
       }
       return [];
     },
@@ -3588,10 +3590,10 @@ var compKeys = [];
             console.log(err);
           }
         });
-
         //reset options to allow user a blank slate for next competition
         this.catToAdd = null;
         this.timeToAdd = null;
+        this.updateAllComps();
       }
     },
 
@@ -15776,7 +15778,7 @@ return /******/ (function(modules) { // webpackBootstrap
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_App_vue__ = __webpack_require__(9);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_629e71b6_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(57);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_81b21eb6_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(57);
 function injectStyle (ssrContext) {
   __webpack_require__(30)
 }
@@ -15796,7 +15798,7 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_App_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_629e71b6_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_81b21eb6_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
@@ -15817,7 +15819,7 @@ var content = __webpack_require__(31);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(2)("2dda50e2", content, true, {});
+var update = __webpack_require__(2)("26e5afb4", content, true, {});
 
 /***/ }),
 /* 31 */
@@ -45720,7 +45722,7 @@ var objectKeys = Object.keys || function (obj) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return (!_vm.hidden)?_c('div',{style:(_vm.projectStyle),attrs:{"id":"app"}},[_c('header',[_c('nav',{staticClass:"navbar navbar-inverse"},[_c('div',{staticClass:"container-fluid"},[_c('authentication',{staticClass:"nav navbar-nav navbar-right",attrs:{"getUser":_vm.getUser,"setUser":_vm.setUser}}),_vm._v(" "),_c('div',{staticClass:"nav navbar-nav navbar-left",attrs:{"id":"project-styling"}},[_c('h4',[_vm._v(" Customize your Experience ")]),_vm._v(" "),_c('input',{attrs:{"type":"color","id":"bg-select","value":"#00ccff"},on:{"change":function($event){_vm.updateBackground($event)}}}),_vm._v(" "),_c('label',{attrs:{"type":"text","for":"bg-select"}},[_vm._v("Customize background color")]),_vm._v(" "),_c('input',{attrs:{"type":"color","id":"text-select","value":"#000000"},on:{"change":function($event){_vm.updateText($event)}}}),_vm._v(" "),_c('label',{attrs:{"type":"text","for":"text-select"}},[_vm._v("Customize text color")])])],1)]),_vm._v(" "),_c('hr')]),_vm._v(" "),_c('main',[_c('div',{attrs:{"id":"filter-bar"}},[_c('p',[_vm._v("Select from the below categories to filter by the associated competition type:\r\n        ")]),_c('p'),_c('div',{staticClass:"toFilter"},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.filtered),expression:"filtered"}],attrs:{"type":"checkbox","id":"largeCapFilter","value":"Large Cap"},domProps:{"checked":Array.isArray(_vm.filtered)?_vm._i(_vm.filtered,"Large Cap")>-1:(_vm.filtered)},on:{"change":function($event){var $$a=_vm.filtered,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="Large Cap",$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.filtered=$$a.concat([$$v]))}else{$$i>-1&&(_vm.filtered=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.filtered=$$c}}}}),_vm._v(" "),_c('label',{attrs:{"for":"largeCapFilter"}},[_vm._v("Large Cap")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.filtered),expression:"filtered"}],attrs:{"type":"checkbox","id":"techFilter","value":"Tech"},domProps:{"checked":Array.isArray(_vm.filtered)?_vm._i(_vm.filtered,"Tech")>-1:(_vm.filtered)},on:{"change":function($event){var $$a=_vm.filtered,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="Tech",$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.filtered=$$a.concat([$$v]))}else{$$i>-1&&(_vm.filtered=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.filtered=$$c}}}}),_vm._v(" "),_c('label',{attrs:{"for":"techFilter"}},[_vm._v("Tech")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.filtered),expression:"filtered"}],attrs:{"type":"checkbox","id":"cryptoFilter","value":"Crypto"},domProps:{"checked":Array.isArray(_vm.filtered)?_vm._i(_vm.filtered,"Crypto")>-1:(_vm.filtered)},on:{"change":function($event){var $$a=_vm.filtered,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="Crypto",$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.filtered=$$a.concat([$$v]))}else{$$i>-1&&(_vm.filtered=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.filtered=$$c}}}}),_vm._v(" "),_c('label',{attrs:{"for":"cryptoFilter"}},[_vm._v("Crypto")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.filtered),expression:"filtered"}],attrs:{"type":"checkbox","id":"bySectorFilter","value":"By Sector"},domProps:{"checked":Array.isArray(_vm.filtered)?_vm._i(_vm.filtered,"By Sector")>-1:(_vm.filtered)},on:{"change":function($event){var $$a=_vm.filtered,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="By Sector",$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.filtered=$$a.concat([$$v]))}else{$$i>-1&&(_vm.filtered=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.filtered=$$c}}}}),_vm._v(" "),_c('label',{attrs:{"for":"bySectorFilter"}},[_vm._v("By Sector")])])]),_vm._v(" "),_c('section',{staticClass:"container"},[_c('div',{staticClass:"menuBar"},[_c('div',{staticClass:"menuButtons"},[_c('label',[_vm._v(" Choose a Category")]),_vm._v(" "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.catToAdd),expression:"catToAdd"}],on:{"change":function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.catToAdd=$event.target.multiple ? $$selectedVal : $$selectedVal[0]}}},[_c('option',{attrs:{"disabled":"","value":""}},[_vm._v(" Please select one")]),_vm._v(" "),_c('option',[_vm._v(" Large Cap")]),_vm._v(" "),_c('option',[_vm._v(" Tech")]),_vm._v(" "),_c('option',[_vm._v(" Crypto")]),_vm._v(" "),_c('option',[_vm._v(" By Sector")])]),_vm._v(" "),_c('label',[_vm._v(" Choose a Timeframe")]),_vm._v(" "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.timeToAdd),expression:"timeToAdd"}],on:{"change":function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.timeToAdd=$event.target.multiple ? $$selectedVal : $$selectedVal[0]}}},[_c('option',{attrs:{"disabled":"","value":""}},[_vm._v(" Please select one")]),_vm._v(" "),_c('option',[_vm._v(" One Day")]),_vm._v(" "),_c('option',[_vm._v(" One Week")]),_vm._v(" "),_c('option',[_vm._v(" Two Weeks")]),_vm._v(" "),_c('option',[_vm._v(" One Month")])]),_vm._v(" "),_c('button',{on:{"click":_vm.addComp}},[_vm._v("Add competition")])])]),_vm._v(" "),_c('div',{staticClass:"main"},[_c('div',{staticClass:"competitionsBackground"},[_c('ul',{staticClass:"compsList"},_vm._l((_vm.reverseComps),function(comp){return (_vm.filtered.indexOf(comp.title)!=-1)?_c('li',[_c('div',{staticClass:"compView"},[_c('h2',{staticClass:"compTitle"},[_vm._v(_vm._s(comp.title))]),_vm._v(" "),(!(comp.isComplete))?_c('p',[_vm._v("Leader: "+_vm._s(comp.leader))]):_vm._e(),_vm._v(" "),((comp.isComplete))?_c('p',[_vm._v("Winner: "+_vm._s(comp.leader))]):_vm._e(),_vm._v(" "),_c('p',[_vm._v("Created: "+_vm._s(_vm._f("formatDate")(comp.created)))]),_vm._v(" "),(!(comp.isComplete))?_c('P',[_vm._v("Expires: "+_vm._s(_vm._f("formatDate")(comp.deadline)))]):_vm._e(),_vm._v(" "),((comp.isComplete))?_c('P',[_vm._v("Expired: "+_vm._s(_vm._f("formatDate")(comp.deadline)))]):_vm._e(),_vm._v(" "),_c('div',{staticClass:"userButtons"},[_c('button',{on:{"click":function($event){_vm.viewComp(comp)}}},[_vm._v("View\r\n                                    ")])]),_vm._v(" "),_c('div',{staticClass:"adminButtons"},[_c('button',{on:{"click":function($event){_vm.deleteComp(comp)}}},[_vm._v("Delete")])])],1)]):_vm._e()}))])]),_vm._v(" "),_vm._l((_vm.competitions),function(comp){return ( comp['.key'] === _vm.viewKey)?_c('div',[_c('div',{staticClass:"modal"},[_c('h2',{staticClass:"modalTitle"},[_vm._v(_vm._s(comp.title))]),_vm._v(" "),_c('span',{staticClass:"closeModal",on:{"click":function($event){_vm.closeModal(comp)}}},[_vm._v("×")]),_vm._v(" "),_c('div',{staticClass:"modalBox"},[_c('h3',[_vm._v(" Available Stocks")]),_vm._v(" "),_c('ul',{staticClass:"availStocks"},_vm._l((comp.availStocks),function(ticker){return _c('li',[_vm._v(_vm._s(ticker))])}))]),_vm._v(" "),_c('div',{staticClass:"modalBox"},[_c('h3',[_vm._v(" Leader Board")]),_vm._v(" "),_c('ul',_vm._l((comp.users),function(user){return _c('li',[_vm._v(" "+_vm._s(user.username)+" "+_vm._s(_vm._f("formatCurr")(user.currentValue))+" "+_vm._s(_vm._f("formatPer")(((user.currentValue - 1000000)/1000000)*100)))])})),_vm._v(" "),(!(comp.isComplete))?_c('button',{on:{"click":function($event){_vm.updateAllComps()}}},[_vm._v("Refresh")]):_vm._e()]),_vm._v(" "),(!(comp.isComplete))?_c('button',{on:{"click":function($event){_vm.joinComp(comp)}}},[_vm._v("Join")]):_vm._e()]),_vm._v(" "),(_vm.userJoining)?_c('div',{staticClass:"modal"},[_c('div',{staticClass:"joinContainer"},[_c('p',[_vm._v(" JOIN SCREEN TEMP")]),_vm._v(" "),_c('h3',[_vm._v(" Available Stocks")]),_vm._v(" "),_c('ul',{staticClass:"availStocks"},_vm._l((comp.availStocks),function(ticker,index){return _c('li',[_vm._v(_vm._s(ticker)),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.selectedStocks[index]),expression:"selectedStocks[index]"}],attrs:{"placeholder":"add % up to 100"},domProps:{"value":(_vm.selectedStocks[index])},on:{"input":function($event){if($event.target.composing){ return; }_vm.$set(_vm.selectedStocks, index, $event.target.value)}}})])})),_vm._v(" "),_c('button',{on:{"click":function($event){_vm.submitPicks(comp)}}},[_vm._v(" Select Stocks")])])]):_vm._e()]):_vm._e()})],2)]),_vm._v(" "),_c('div',{attrs:{"id":"business-news"}},[_c('h3',[_vm._v("Top Business News Articles")]),_vm._v(" "),_c('ul',{staticClass:"articles"},_vm._l((_vm.newsHeadlines),function(headline){return _c('li',{staticClass:"newsLink"},[_c('a',{attrs:{"href":headline.url,"target":"_blank"}},[_vm._v(_vm._s(headline.title))])])})),_vm._v(" "),_vm._m(0)])]):_c('div',{style:(_vm.projectStyle),attrs:{"id":"userProfile"}},[_c('Profile',{attrs:{"currentUser":this.user}})],1)}
+var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return (!_vm.hidden)?_c('div',{style:(_vm.projectStyle),attrs:{"id":"app"}},[_c('header',[_c('nav',{staticClass:"navbar navbar-inverse"},[_c('div',{staticClass:"container-fluid"},[_c('authentication',{staticClass:"nav navbar-nav navbar-right",attrs:{"getUser":_vm.getUser,"setUser":_vm.setUser}}),_vm._v(" "),_c('div',{staticClass:"nav navbar-nav navbar-left",attrs:{"id":"project-styling"}},[_c('h4',[_vm._v(" Customize your Experience ")]),_vm._v(" "),_c('input',{attrs:{"type":"color","id":"bg-select","value":"#00ccff"},on:{"change":function($event){_vm.updateBackground($event)}}}),_vm._v(" "),_c('label',{attrs:{"type":"text","for":"bg-select"}},[_vm._v("Customize background color")]),_vm._v(" "),_c('input',{attrs:{"type":"color","id":"text-select","value":"#000000"},on:{"change":function($event){_vm.updateText($event)}}}),_vm._v(" "),_c('label',{attrs:{"type":"text","for":"text-select"}},[_vm._v("Customize text color")])])],1)]),_vm._v(" "),_c('hr')]),_vm._v(" "),_c('main',[_c('div',{attrs:{"id":"filter-bar"}},[_c('p',[_vm._v("Select from the below categories to filter by the associated competition type:\r\n        ")]),_c('p'),_c('div',{staticClass:"toFilter"},[_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.filtered),expression:"filtered"}],attrs:{"type":"checkbox","id":"largeCapFilter","value":"Large Cap"},domProps:{"checked":Array.isArray(_vm.filtered)?_vm._i(_vm.filtered,"Large Cap")>-1:(_vm.filtered)},on:{"change":function($event){var $$a=_vm.filtered,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="Large Cap",$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.filtered=$$a.concat([$$v]))}else{$$i>-1&&(_vm.filtered=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.filtered=$$c}}}}),_vm._v(" "),_c('label',{attrs:{"for":"largeCapFilter"}},[_vm._v("Large Cap")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.filtered),expression:"filtered"}],attrs:{"type":"checkbox","id":"techFilter","value":"Tech"},domProps:{"checked":Array.isArray(_vm.filtered)?_vm._i(_vm.filtered,"Tech")>-1:(_vm.filtered)},on:{"change":function($event){var $$a=_vm.filtered,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="Tech",$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.filtered=$$a.concat([$$v]))}else{$$i>-1&&(_vm.filtered=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.filtered=$$c}}}}),_vm._v(" "),_c('label',{attrs:{"for":"techFilter"}},[_vm._v("Tech")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.filtered),expression:"filtered"}],attrs:{"type":"checkbox","id":"finFilter","value":"Financials"},domProps:{"checked":Array.isArray(_vm.filtered)?_vm._i(_vm.filtered,"Financials")>-1:(_vm.filtered)},on:{"change":function($event){var $$a=_vm.filtered,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="Financials",$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.filtered=$$a.concat([$$v]))}else{$$i>-1&&(_vm.filtered=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.filtered=$$c}}}}),_vm._v(" "),_c('label',{attrs:{"for":"finFilter"}},[_vm._v("Financials")]),_vm._v(" "),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.filtered),expression:"filtered"}],attrs:{"type":"checkbox","id":"consFilter","value":"Consumer Discretionary"},domProps:{"checked":Array.isArray(_vm.filtered)?_vm._i(_vm.filtered,"Consumer Discretionary")>-1:(_vm.filtered)},on:{"change":function($event){var $$a=_vm.filtered,$$el=$event.target,$$c=$$el.checked?(true):(false);if(Array.isArray($$a)){var $$v="Consumer Discretionary",$$i=_vm._i($$a,$$v);if($$el.checked){$$i<0&&(_vm.filtered=$$a.concat([$$v]))}else{$$i>-1&&(_vm.filtered=$$a.slice(0,$$i).concat($$a.slice($$i+1)))}}else{_vm.filtered=$$c}}}}),_vm._v(" "),_c('label',{attrs:{"for":"consFilter"}},[_vm._v("Consumer Discretionary")])])]),_vm._v(" "),_c('section',{staticClass:"container"},[_c('div',{staticClass:"menuBar"},[_c('div',{staticClass:"menuButtons"},[_c('label',[_vm._v(" Choose a Category")]),_vm._v(" "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.catToAdd),expression:"catToAdd"}],on:{"change":function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.catToAdd=$event.target.multiple ? $$selectedVal : $$selectedVal[0]}}},[_c('option',{attrs:{"disabled":"","value":""}},[_vm._v(" Please select one")]),_vm._v(" "),_c('option',[_vm._v(" Large Cap")]),_vm._v(" "),_c('option',[_vm._v(" Tech")]),_vm._v(" "),_c('option',[_vm._v(" Financials")]),_vm._v(" "),_c('option',[_vm._v(" Consumer Discretionary")])]),_vm._v(" "),_c('label',[_vm._v(" Choose a Timeframe")]),_vm._v(" "),_c('select',{directives:[{name:"model",rawName:"v-model",value:(_vm.timeToAdd),expression:"timeToAdd"}],on:{"change":function($event){var $$selectedVal = Array.prototype.filter.call($event.target.options,function(o){return o.selected}).map(function(o){var val = "_value" in o ? o._value : o.value;return val}); _vm.timeToAdd=$event.target.multiple ? $$selectedVal : $$selectedVal[0]}}},[_c('option',{attrs:{"disabled":"","value":""}},[_vm._v(" Please select one")]),_vm._v(" "),_c('option',[_vm._v(" One Day")]),_vm._v(" "),_c('option',[_vm._v(" One Week")]),_vm._v(" "),_c('option',[_vm._v(" Two Weeks")]),_vm._v(" "),_c('option',[_vm._v(" One Month")])]),_vm._v(" "),_c('button',{on:{"click":_vm.addComp}},[_vm._v("Add competition")])])]),_vm._v(" "),_c('div',{staticClass:"main"},[_c('div',{staticClass:"competitionsBackground"},[_c('ul',{staticClass:"compsList"},_vm._l((_vm.reverseComps),function(comp){return (_vm.filtered.indexOf(comp.title)!=-1)?_c('li',[_c('div',{staticClass:"compView"},[_c('h2',{staticClass:"compTitle"},[_vm._v(_vm._s(comp.title))]),_vm._v(" "),(!(comp.isComplete))?_c('p',[_vm._v("Leader: "+_vm._s(comp.leader))]):_vm._e(),_vm._v(" "),((comp.isComplete))?_c('p',[_vm._v("Winner: "+_vm._s(comp.leader))]):_vm._e(),_vm._v(" "),_c('p',[_vm._v("Created: "+_vm._s(_vm._f("formatDate")(comp.created)))]),_vm._v(" "),(!(comp.isComplete))?_c('P',[_vm._v("Expires: "+_vm._s(_vm._f("formatDate")(comp.deadline)))]):_vm._e(),_vm._v(" "),((comp.isComplete))?_c('P',[_vm._v("Expired: "+_vm._s(_vm._f("formatDate")(comp.deadline)))]):_vm._e(),_vm._v(" "),_c('div',{staticClass:"userButtons"},[_c('button',{on:{"click":function($event){_vm.viewComp(comp)}}},[_vm._v("View\r\n                                    ")])]),_vm._v(" "),_c('div',{staticClass:"adminButtons"},[_c('button',{on:{"click":function($event){_vm.deleteComp(comp)}}},[_vm._v("Delete")])])],1)]):_vm._e()}))])]),_vm._v(" "),_vm._l((_vm.competitions),function(comp){return ( comp['.key'] === _vm.viewKey)?_c('div',[_c('div',{staticClass:"modal"},[_c('h2',{staticClass:"modalTitle"},[_vm._v(_vm._s(comp.title))]),_vm._v(" "),_c('span',{staticClass:"closeModal",on:{"click":function($event){_vm.closeModal(comp)}}},[_vm._v("×")]),_vm._v(" "),_c('div',{staticClass:"modalBox"},[_c('h3',[_vm._v(" Available Stocks")]),_vm._v(" "),_c('ul',{staticClass:"availStocks"},_vm._l((comp.availStocks),function(ticker){return _c('li',[_vm._v(_vm._s(ticker))])}))]),_vm._v(" "),_c('div',{staticClass:"modalBox"},[_c('h3',[_vm._v(" Leader Board")]),_vm._v(" "),_c('ul',_vm._l((comp.users),function(user){return _c('li',[_vm._v(" "+_vm._s(user.username)+" "+_vm._s(_vm._f("formatCurr")(user.currentValue))+" "+_vm._s(_vm._f("formatPer")(((user.currentValue - 1000000)/1000000)*100)))])})),_vm._v(" "),(!(comp.isComplete))?_c('button',{on:{"click":function($event){_vm.updateAllComps()}}},[_vm._v("Refresh")]):_vm._e()]),_vm._v(" "),(!(comp.isComplete))?_c('button',{on:{"click":function($event){_vm.joinComp(comp)}}},[_vm._v("Join")]):_vm._e()]),_vm._v(" "),(_vm.userJoining)?_c('div',{staticClass:"modal"},[_c('div',{staticClass:"joinContainer"},[_c('p',[_vm._v(" JOIN SCREEN TEMP")]),_vm._v(" "),_c('h3',[_vm._v(" Available Stocks")]),_vm._v(" "),_c('ul',{staticClass:"availStocks"},_vm._l((comp.availStocks),function(ticker,index){return _c('li',[_vm._v(_vm._s(ticker)),_c('input',{directives:[{name:"model",rawName:"v-model",value:(_vm.selectedStocks[index]),expression:"selectedStocks[index]"}],attrs:{"placeholder":"add % up to 100"},domProps:{"value":(_vm.selectedStocks[index])},on:{"input":function($event){if($event.target.composing){ return; }_vm.$set(_vm.selectedStocks, index, $event.target.value)}}})])})),_vm._v(" "),_c('button',{on:{"click":function($event){_vm.submitPicks(comp)}}},[_vm._v(" Select Stocks")])])]):_vm._e()]):_vm._e()})],2)]),_vm._v(" "),_c('div',{attrs:{"id":"business-news"}},[_c('h3',[_vm._v("Top Business News Articles")]),_vm._v(" "),_c('ul',{staticClass:"articles"},_vm._l((_vm.newsHeadlines),function(headline){return _c('li',{staticClass:"newsLink"},[_c('a',{attrs:{"href":headline.url,"target":"_blank"}},[_vm._v(_vm._s(headline.title))])])})),_vm._v(" "),_vm._m(0)])]):_c('div',{style:(_vm.projectStyle),attrs:{"id":"userProfile"}},[_c('Profile',{attrs:{"currentUser":this.user}})],1)}
 var staticRenderFns = [function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;return _c('span',[_vm._v("News powered by "),_c('a',{attrs:{"href":"https://newsapi.org/"}},[_vm._v("NewsAPI.org")])])}]
 var esExports = { render: render, staticRenderFns: staticRenderFns }
 /* harmony default export */ __webpack_exports__["a"] = (esExports);
