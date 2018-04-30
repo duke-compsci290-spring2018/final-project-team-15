@@ -341,10 +341,12 @@ export default {
 
     checkAdmin() {
       //console.log(this.admins);
-      for (var admin in this.admins) {
-        //onsole.log("admin is ", this.admins[admin]['.value']);
-        if (this.admins[admin]['.value'] === this.user.uid) {
-          this.isAdmin = true;
+      if (this.user !== null){
+        for (var admin in this.admins) {
+          //onsole.log("admin is ", this.admins[admin]['.value']);
+          if (this.admins[admin]['.value'] === this.user.uid) {
+            this.isAdmin = true;
+          }
         }
       }
     },
