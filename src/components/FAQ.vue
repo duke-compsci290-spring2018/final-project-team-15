@@ -27,7 +27,7 @@
       You can check out competitions that have already been completed as well.
     </li>
     <li>
-      Invite your friends over email, Facebook, or Twitter.
+      Invite your friends over email via your profile.
       Feel free to share your performance too!
     </li>
     <li>

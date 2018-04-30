@@ -43,6 +43,7 @@
       <!--MENUBAR-->
       <div class="menuBar" v-cloak>
         <div class="menuButtons">
+          <button @click="viewLeaders()">View Leader Board</button>
           <label> Choose a Category</label>
           <select v-model="catToAdd">
                         <option disabled value =""> Please select one</option>
@@ -94,6 +95,13 @@
         </div>
       </div>
       <!--MODALS-->
+      <div class="modal" v-if="viewLeaderBool">
+        <h3>Most Comps Won</h3>
+        <ol class="leaderList">
+          <li v-for="leader in sortedLeaders">{{leader.name}}: {{leader.num}}</li>
+        </ol>
+        <button @click="exitLeaders()">Go Back</button>
+      </div>
       <div v-for="comp in competitions" v-if=" comp['.key'] === viewKey">
         <div class="modal">
           <h2 class="modalTitle">{{ comp.title}}</h2>
@@ -151,7 +159,8 @@ import {
   compsRef,
   choicesRef,
   winsRef,
-  adminsRef
+  adminsRef,
+  leaderRef
 } from './database'
 import Authentication from './components/Authentication'
 import FAQ from './components/FAQ'
@@ -207,8 +216,9 @@ export default {
       localPrices: {},
       userProfileToView: null,
       sameUser: false,
-      isAdmin: false
-
+      isAdmin: false,
+      viewLeaderBool: false,
+      unSortedLeaders: []
     }
   },
   firebase: {
@@ -218,16 +228,25 @@ export default {
         this.updateAllComps();
       }
     },
-
     admins: {
       source: adminsRef,
       readyCallback: function() {
         this.checkAdmin();
       }
     },
-
     choices: choicesRef,
-    wins: winsRef
+    wins:  {
+      source: winsRef,
+      readyCallback: function() {
+        this.updateLeaderBoard();
+      }
+    },
+    leaders: {
+      source: leaderRef,
+      readyCallback: function() {
+        this.sortLeaders();
+      }
+    }
   },
   components: {
     Authentication,
@@ -254,6 +273,17 @@ export default {
   computed: {
     reverseComps() {
       return this.competitions.slice().reverse();
+    },
+    // https://stackoverflow.com/questions/42883835/sort-an-array-in-vue-js
+    sortedLeaders: function() {
+      function compare(a, b) {
+        if (a.num < b.num)
+          return 1;
+        if (a.num > b.num)
+          return -1;
+        return 0;
+      }
+      return this.unSortedLeaders.sort(compare);
     }
   },
   mounted() {
@@ -261,6 +291,41 @@ export default {
     this.getNewsData();
   },
   methods: {
+
+    sortLeaders(){
+      console.log("Sorting leaders");
+      for(var i in this.leaders){
+        this.unSortedLeaders.push({
+          name: this.leaders[i]["displayName"],
+          num: this.leaders[i]["compsWon"]
+        });
+      }
+      console.log(this.unSortedLeaders);
+    },
+
+    exitLeaders(){
+      this.viewLeaderBool = false;
+    },
+
+    viewLeaders(){
+      this.viewLeaderBool = true;
+    },
+
+    updateLeaderBoard(){
+      console.log("updating leaderbaord");
+      console.log(this.wins);
+
+      for(var i in this.wins){
+        var userID = this.wins[i]['.key'];
+        var numWon = 0;
+        for(var compWon in this.wins[i]["compsWon"]){
+          numWon++;
+        }
+        var displayName = this.wins[i]["displayName"];
+        leaderRef.child(userID).child("compsWon").set(numWon);
+        leaderRef.child(userID).child("displayName").set(displayName);
+      }
+    },
 
     checkAdmin() {
       //console.log(this.admins);
@@ -354,15 +419,7 @@ export default {
               });
               // add the compKey as the key under cmpsWon, add the comps deadline as the value
               winsRef.child(child.child("leaderID").val()).child("compsWon").child(child.key).set(child.child("deadline").val());
-              const sgMail = require('@sendgrid/mail');
-              sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-              const msg = {
-                to: 'kelleyscroggs@gmail.com',
-                from: 'admins@fantasystocktrading.com',
-                subject: 'Competition Closed',
-                text: 'This is an alert that your Fantasy Stock Trading competition has closed.'
-              };
-              sgMail.send(msg);
+              winsRef.child(child.child("leaderID").val()).child("displayName").set(child.child("leader").val());
             }
           })
 

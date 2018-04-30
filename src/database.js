@@ -22,6 +22,7 @@ export const choicesRef = db.ref('compChoices');
 export const winsRef = db.ref('wins');
 export const picsRef = db.ref('pictures');
 export const adminsRef = db.ref('admins');
+export const leaderRef = db.ref('leaderBoard');
 
 // create useful endpoints within the database
 //export const imagesRef = db.ref('images')
