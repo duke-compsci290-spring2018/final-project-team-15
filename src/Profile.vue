@@ -17,10 +17,18 @@
       <button @click="uploadImage()">Upload Image</button>
     </div>
   </div>
+
+  <div id="invite" v-if="isLoggedIn">
+    <span class="emailInvite">Invite a friend to Fantasy Stock Trading!</span>
+    <input class="emailInvite" size="35" placeholder="Enter your friend's email here" v-model="invitationEmail">
+    <textarea name="myMessage" class="emailInvite" cols="80" rows="5" v-model="invitationMessage" placeholder="Enter your message here"></textarea>
+    <button class="emailInvite" @click="sendInvite">Invite</button>
+  </div>
+
   <hr>
 
   <div class="competitionStatus">
-    <h3>Your Current Competitions:</h3>
+    <h3>Current Competitions:</h3>
     <ul id="userComps">
       <li v-for="comp in competitions" v-if="comp.users && !comp.isComplete">
         <div class="compView" v-for="user in comp.users" v-if="(isLoggedIn && (user.userid === currentUser.uid)) || (user.userid === currentUser.userid)">
@@ -38,7 +46,7 @@
   </div>
 
   <div class="competitionStatus">
-    <h3>Your Old Competitions:</h3>
+    <h3>Old Competitions:</h3>
     <ul id="userComps">
       <li v-for="comp in competitions" v-if="comp.users && comp.isComplete">
         <div class="compView" v-for="user in comp.users" v-if="(isLoggedIn && (user.userid === currentUser.uid)) || (user.userid === currentUser.userid)">
@@ -69,7 +77,9 @@ export default {
     return {
       isShown: false,
       userImageSource: "src/assets/empty-avatar.jpg",
-      emailContent: "?subject=Fantasy%20Stock%20Trading&body=I%20saw%20your%20profile%20on%20Fantasy%20Stock%20Trading%20and%20wanted%20to%20say..."
+      emailContent: "?subject=Fantasy%20Stock%20Trading&body=I%20saw%20your%20profile%20on%20Fantasy%20Stock%20Trading%20and%20wanted%20to%20say...",
+      invitationEmail: null,
+      invitationMessage: "I've been playing Fantasy Stock Trading lately, and you should too!  Check it out here: https://duke-compsci290-spring2018.github.io/final-project-team-15/"
     }
   },
   firebase: {
@@ -112,6 +122,17 @@ export default {
   },
   // methods for signing in and out
   methods: {
+
+    sendInvite() {
+      //console.log("email is ", this.invitationEmail);
+      if (this.invitationEmail!==null) {
+        window.location.href = "mailto:" + this.invitationEmail + "?subject=Check%20Out%20This%20Cool%20Site!&body=" + this.invitationMessage;
+      }
+      else {
+        alert("Invalid email.")
+      }
+    },
+
     uploadImage() {
       var grabbedImage = document.getElementById('files');
       //var validFileExtensions = [".jpg", ".jpeg", ".bmp", ".gif", ".png"];
@@ -177,6 +198,7 @@ export default {
   margin-top: 20px;
   margin-bottom: 20px;
   margin-left: auto;
+  margin-right: auto;
 }
 
 #userInfo {
@@ -188,7 +210,20 @@ export default {
   text-align: center;
 }
 
-#image button, input, label {
+.emailInvite {
+  display: block;
+  margin-top: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+span[class="emailInvite"] {
+  text-align: center;
+  font-weight: bold;
+  margin-top: 30px;
+}
+
+input, label {
   margin-top: 20px;
   display: block;
   margin-left: auto;
@@ -201,4 +236,5 @@ img {
   margin-right: auto;
   height: 500px;
 }
+
 </style>

@@ -485,7 +485,10 @@ export default {
 
     // Allows admin to delete a competition
     deleteComp(comp) {
-      compsRef.child(comp['.key']).remove();
+      var shouldDelete = confirm("Are you sure you want to delete this competition?");
+      if (shouldDelete) {
+        compsRef.child(comp['.key']).remove();
+      }
     },
 
     // allows user to view an ongoing competition

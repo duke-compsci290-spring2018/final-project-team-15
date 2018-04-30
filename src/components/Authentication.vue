@@ -1,9 +1,9 @@
 <template>
 <ul>
     <li v-if="user"><a>{{user.name}}</a></li>
-    <li v-if="user" @click="signOut"><a><span class="glyphicon glyphicon-log-out"></span>Logout</a></li>
+    <li v-if="user" @click="signOut"><a class="clickable"><span class="glyphicon glyphicon-log-out"></span>Logout</a></li>
     <button v-if="user" @click="viewProfile">View Profile</button>
-    <li v-else @click="signInPopup"><a><span class="glyphicon glyphicon-user"></span>Sign In</a></li>
+    <li v-else @click="signInPopup"><a class="clickable"><span class="glyphicon glyphicon-user"></span>Sign In</a></li>
     <!-- sign in "popup" container does not popup for email authentication, so provide so styling help -->
     <div id="firebaseui-auth-container" :class="{ popup: isShown }"></div>
 </ul>
@@ -73,9 +73,12 @@ export default {
             this.$parent.checkAdmin();
         },
         signOut () {
-            Firebase.auth().signOut()
-            this.setUser(null)
-            this.$parent.isAdmin = false;
+            var shouldLogOut = confirm("Are you sure you want to log out?");
+            if (shouldLogOut) {
+              Firebase.auth().signOut()
+              this.setUser(null)
+              this.$parent.isAdmin = false;
+            }
         },
 
         viewProfile() {
@@ -96,7 +99,11 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
+li {
+  padding-bottom: 10px;
+}
+
 .popup {
     position: absolute;
     padding: 15px;
@@ -105,5 +112,14 @@ export default {
     top: 50%;
     left: 50%;
     transform: translate(-50%,0%);
+}
+
+.clickable {
+  text-decoration: underline;
+  color: blue;
+}
+
+.clickable:hover {
+  cursor: pointer;
 }
 </style>
