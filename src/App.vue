@@ -45,8 +45,8 @@
       <div class="menuBar" v-cloak>
         <div class="menuButtons">
           <button @click="viewLeaders()">View Leader Board</button>
-          <label> Choose a Category</label>
-          <select v-model="catToAdd">
+          <label for="firstSelector"> Choose a Category</label>
+          <select id="firstSelector" v-model="catToAdd">
                         <option disabled value =""> Please select one</option>
                         <option> Large Cap</option>
                         <option> Tech</option>
@@ -54,8 +54,8 @@
                         <option> Consumer Discretionary</option>
                     </select>
 
-          <label> Choose a Timeframe</label>
-          <select v-model="timeToAdd">
+          <label for="secondSelector"> Choose a Timeframe</label>
+          <select id="secondSelector" v-model="timeToAdd">
                         <option disabled value =""> Please select one</option>
                         <option> One Day</option>
                         <option> One Week</option>
@@ -146,7 +146,7 @@
     <ul class="articles">
       <li class="newsLink" v-for="headline in newsHeadlines"><a :href="headline.url" target="_blank">{{ headline.title }}</a></li>
     </ul>
-    <span>News powered by <a href="https://newsapi.org/">NewsAPI.org</a></span>
+    <span>News powered by <a class="redLink" href="https://newsapi.org/">NewsAPI.org</a></span>
   </div>
 </div>
 <div v-else id="userProfile" v-bind:style="projectStyle">
@@ -674,6 +674,11 @@ export default {
 </script>
 
 <style>
+
+.redLink {
+  color: red;
+}
+
 .clickable {
   text-decoration: underline;
   color: blue;
