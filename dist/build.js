@@ -3473,8 +3473,8 @@ var compKeys = [];
       console.log("Sorting leaders");
       for (var i in this.leaders) {
         this.unSortedLeaders.push({
-          name: this.leaders[i]["displayName"],
-          num: this.leaders[i]["compsWon"]
+          name: this.leaders[i].displayName,
+          num: this.leaders[i].compsWon
         });
       }
       console.log(this.unSortedLeaders);
@@ -3492,10 +3492,10 @@ var compKeys = [];
       for (var i in this.wins) {
         var userID = this.wins[i]['.key'];
         var numWon = 0;
-        for (var compWon in this.wins[i]["compsWon"]) {
+        for (var compWon in this.wins[i].compsWon) {
           numWon++;
         }
-        var displayName = this.wins[i]["displayName"];
+        var displayName = this.wins[i].displayName;
         __WEBPACK_IMPORTED_MODULE_0__database__["d" /* leaderRef */].child(userID).child("compsWon").set(numWon);
         __WEBPACK_IMPORTED_MODULE_0__database__["d" /* leaderRef */].child(userID).child("displayName").set(displayName);
       }
@@ -3533,15 +3533,15 @@ var compKeys = [];
         var compKey = this.competitions[i]['.key'];
         this.getAllPrices(this.competitions[i]);
         var maxVal = 0.0;
-        for (var j in this.competitions[i]["users"]) {
-          var currUser = this.competitions[i]["users"][j]["userid"];
-          var currUserName = this.competitions[i]["users"][j]["username"];
+        for (var j in this.competitions[i].users) {
+          var currUser = this.competitions[i].users[j].userid;
+          var currUserName = this.competitions[i].users[j].username;
           var newVal = 0.0;
           //for each "ticker numShares" of a user
-          for (var k in this.competitions[i]["users"][j]["shares"]) {
-            var shares = parseFloat(this.competitions[i]["users"][j]["shares"][k].split(" ")[1]);
-            var ticker = this.competitions[i]["users"][j]["shares"][k].split(" ")[0];
-            var lastPrice = parseFloat(this.competitions[i]["newestPrices"][ticker]);
+          for (var k in this.competitions[i].users[j].shares) {
+            var shares = parseFloat(this.competitions[i].users[j].shares[k].split(" ")[1]);
+            var ticker = this.competitions[i].users[j].shares[k].split(" ")[0];
+            var lastPrice = parseFloat(this.competitions[i].newestPrices[ticker]);
             newVal += shares * lastPrice;
           }
           console.log("compKey: " + compKey);
@@ -3660,7 +3660,6 @@ var compKeys = [];
 
     //Helper method to add the available stocks to the comp
     addStocksToComp: function addStocksToComp() {
-      var stocksList = [];
       if (this.catToAdd === 'Tech') {
         return techStocks;
       } else if (this.catToAdd === 'Large Cap') {
@@ -3799,9 +3798,9 @@ var compKeys = [];
         //compsRef.child(comp['.key']).child("users").push(userObject);
         __WEBPACK_IMPORTED_MODULE_0__database__["c" /* compsRef */].child(comp['.key']).child("users").child(this.user.uid).set(userObject);
 
-        for (var j = 0; j < this.selectedStocks.length; j++) {
-          if (parseFloat(this.selectedStocks[j]) !== 0) {
-            this.calcShares(comp.availStocks[j], parseFloat(this.selectedStocks[j]), comp, userObject);
+        for (var k = 0; k < this.selectedStocks.length; k++) {
+          if (parseFloat(this.selectedStocks[k]) !== 0) {
+            this.calcShares(comp.availStocks[k], parseFloat(this.selectedStocks[k]), comp, userObject);
           }
         }
         this.onSuccessfulJoin();
@@ -3823,7 +3822,7 @@ var compKeys = [];
       var key = "LSL4TQ54M83DX4NV";
       var requestURL = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&interval=1min&apikey=" + key;
       //var requestURL = "https://marketdata.websol.barchart.com/getQuote.jsonp?apikey=9fbc4b4699da90edd8f7a0f35e9ee971&symbols="+ticker;
-      var responseJSON = this.getStockData(requestURL, comp, ticker, percent);
+      this.getStockData(requestURL, comp, ticker, percent);
     },
     updateBackground: function updateBackground(event) {
       //console.log(event.target.value);
@@ -16043,7 +16042,7 @@ return /******/ (function(modules) { // webpackBootstrap
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_App_vue__ = __webpack_require__(9);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_12db9c36_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(62);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_94525412_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__ = __webpack_require__(62);
 function injectStyle (ssrContext) {
   __webpack_require__(31)
 }
@@ -16063,7 +16062,7 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_App_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_12db9c36_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_94525412_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_App_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
@@ -16084,7 +16083,7 @@ var content = __webpack_require__(32);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(1)("4431e5b9", content, true, {});
+var update = __webpack_require__(1)("08e0614d", content, true, {});
 
 /***/ }),
 /* 32 */

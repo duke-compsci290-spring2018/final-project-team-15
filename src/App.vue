@@ -195,7 +195,6 @@ choicesRef.on('value', function(snap) {
 });
 var compKeys = [];
 
-
 export default {
   name: 'App',
   data() {
@@ -222,7 +221,7 @@ export default {
       isAdmin: false,
       viewLeaderBool: false,
       unSortedLeaders: []
-    }
+    };
   },
   firebase: {
     competitions: {
@@ -309,8 +308,8 @@ export default {
       console.log("Sorting leaders");
       for(var i in this.leaders){
         this.unSortedLeaders.push({
-          name: this.leaders[i]["displayName"],
-          num: this.leaders[i]["compsWon"]
+          name: this.leaders[i].displayName,
+          num: this.leaders[i].compsWon
         });
       }
       console.log(this.unSortedLeaders);
@@ -331,10 +330,10 @@ export default {
       for(var i in this.wins){
         var userID = this.wins[i]['.key'];
         var numWon = 0;
-        for(var compWon in this.wins[i]["compsWon"]){
+        for(var compWon in this.wins[i].compsWon){
           numWon++;
         }
-        var displayName = this.wins[i]["displayName"];
+        var displayName = this.wins[i].displayName;
         leaderRef.child(userID).child("compsWon").set(numWon);
         leaderRef.child(userID).child("displayName").set(displayName);
       }
@@ -373,15 +372,15 @@ export default {
         var compKey = this.competitions[i]['.key'];
         this.getAllPrices(this.competitions[i]);
         var maxVal = 0.0;
-        for (var j in this.competitions[i]["users"]) {
-          var currUser = this.competitions[i]["users"][j]["userid"];
-          var currUserName = this.competitions[i]["users"][j]["username"];
+        for (var j in this.competitions[i].users) {
+          var currUser = this.competitions[i].users[j].userid;
+          var currUserName = this.competitions[i].users[j].username;
           var newVal = 0.0;
           //for each "ticker numShares" of a user
-          for (var k in this.competitions[i]["users"][j]["shares"]) {
-            var shares = parseFloat((this.competitions[i]["users"][j]["shares"][k]).split(" ")[1]);
-            var ticker = (this.competitions[i]["users"][j]["shares"][k]).split(" ")[0];
-            var lastPrice = parseFloat(this.competitions[i]["newestPrices"][ticker]);
+          for (var k in this.competitions[i].users[j].shares) {
+            var shares = parseFloat((this.competitions[i].users[j].shares[k]).split(" ")[1]);
+            var ticker = (this.competitions[i].users[j].shares[k]).split(" ")[0];
+            var lastPrice = parseFloat(this.competitions[i].newestPrices[ticker]);
             newVal += shares * lastPrice;
           }
           console.log("compKey: " + compKey);
@@ -434,9 +433,8 @@ export default {
               winsRef.child(child.child("leaderID").val()).child("compsWon").child(child.key).set(child.child("deadline").val());
               winsRef.child(child.child("leaderID").val()).child("displayName").set(child.child("leader").val());
             }
-          })
-
-        })
+          });
+        });
     },
 
     //gets the data from a url
@@ -485,16 +483,15 @@ export default {
 
     // allow child component to change user value
     getUser() {
-      return this.user
+      return this.user;
     },
 
     setUser(user) {
-      this.user = user
+      this.user = user;
     },
 
     //Helper method to add the available stocks to the comp
     addStocksToComp() {
-      var stocksList = [];
       if (this.catToAdd === 'Tech') {
         return techStocks;
       } else if (this.catToAdd === 'Large Cap') {
@@ -524,7 +521,7 @@ export default {
     // Adds a competition to the website
     addComp() {
       if (this.user === null) {
-        alert("You must sign in to perform this action.")
+        alert("You must sign in to perform this action.");
         return;
       }
       console.log("adding competition");
@@ -543,7 +540,7 @@ export default {
           //isFilteredOut: false
         }).then((data, err) => {
           if (err) {
-            console.log(err)
+            console.log(err);
           }
         });
         //reset options to allow user a blank slate for next competition
@@ -588,7 +585,7 @@ export default {
           }
         }
         if (!userAlreadyJoined) {
-          console.log("user is joining competition")
+          console.log("user is joining competition");
           this.userJoining = true;
         }
       } else {
@@ -626,9 +623,9 @@ export default {
         //compsRef.child(comp['.key']).child("users").push(userObject);
         compsRef.child(comp['.key']).child("users").child(this.user.uid).set(userObject);
 
-        for (var j = 0; j < this.selectedStocks.length; j++) {
-          if (parseFloat(this.selectedStocks[j]) !== 0) {
-            this.calcShares(comp.availStocks[j], parseFloat(this.selectedStocks[j]),
+        for (var k = 0; k < this.selectedStocks.length; k++) {
+          if (parseFloat(this.selectedStocks[k]) !== 0) {
+            this.calcShares(comp.availStocks[k], parseFloat(this.selectedStocks[k]),
               comp,
               userObject
             );
@@ -654,7 +651,7 @@ export default {
       var key = "LSL4TQ54M83DX4NV";
       var requestURL = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=" + ticker + "&interval=1min&apikey=" + key;
       //var requestURL = "https://marketdata.websol.barchart.com/getQuote.jsonp?apikey=9fbc4b4699da90edd8f7a0f35e9ee971&symbols="+ticker;
-      var responseJSON = this.getStockData(requestURL, comp, ticker, percent);
+      this.getStockData(requestURL, comp, ticker, percent);
 
     },
 
@@ -673,6 +670,7 @@ export default {
     }
   }
 }
+
 </script>
 
 <style>
