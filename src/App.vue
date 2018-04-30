@@ -1,4 +1,5 @@
 <template>
+<div>
 <div v-if="!hidden" id="app" v-bind:style="projectStyle">
   <header>
     <nav class="navbar navbar-inverse">
@@ -151,6 +152,8 @@
 <div v-else id="userProfile" v-bind:style="projectStyle">
   <Profile :currentUser="userProfileToView" :isLoggedIn="sameUser"></Profile>
 </div>
+<footer><button @click="exportData">Export Data</button></footer>
+</div>
 </template>
 
 <script>
@@ -291,6 +294,16 @@ export default {
     this.getNewsData();
   },
   methods: {
+    // https://stackoverflow.com/questions/19721439/download-json-object-as-a-file-from-browser
+    exportData()  {
+      var dataStr = JSON.stringify(this.competitions);
+      var dataUri = 'data:text/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      var tempLink = document.createElement('a');
+      tempLink.setAttribute("href",     dataUri);
+      tempLink.setAttribute("download", "CompData.json");
+      tempLink.click();
+      tempLink.remove();
+    },
 
     sortLeaders(){
       console.log("Sorting leaders");
