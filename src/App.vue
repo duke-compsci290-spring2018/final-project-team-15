@@ -79,13 +79,13 @@
 
                 <p>Created: {{ comp.created | formatDate}}</p>
 
-                <P  v-if="!(comp.isComplete)">Expires: {{ comp.deadline | formatDate}}</P>
-                <P  v-if="(comp.isComplete)">Expired: {{ comp.deadline | formatDate}}</P>
+                <P v-if="!(comp.isComplete)">Expires: {{ comp.deadline | formatDate}}</P>
+                <P v-if="(comp.isComplete)">Expired: {{ comp.deadline | formatDate}}</P>
                 <div class="userButtons">
                   <button @click="viewComp(comp)">View
                                     </button>
                 </div>
-                <div class="adminButtons">
+                <div v-if="isAdmin" class="adminButtons">
                   <button @click="deleteComp(comp)">Delete</button>
                 </div>
               </div>
@@ -97,7 +97,7 @@
       <div v-for="comp in competitions" v-if=" comp['.key'] === viewKey">
         <div class="modal">
           <h2 class="modalTitle">{{ comp.title}}</h2>
-          <span class="closeModal" @click="closeModal(comp)">&times;</span>
+          <span class="closeModal exit" @click="closeModal(comp)">&times;</span>
           <div class="modalBox">
             <h3> Available Stocks</h3>
             <ul class="availStocks">
@@ -108,11 +108,12 @@
 
             <h3> Leader Board</h3>
             <ul>
-              <li v-for="user in comp.users"> {{user.username}} {{user.currentValue | formatCurr}} {{((user.currentValue - 1000000)/1000000)*100 | formatPer}}</li>
+              <li v-for="leaderboardUser in comp.users">
+                <div class="clickable" @click="viewOtherProfile(leaderboardUser)">{{leaderboardUser.username}}</div> {{leaderboardUser.currentValue | formatCurr}} {{((leaderboardUser.currentValue - 1000000)/1000000)*100 | formatPer}}</li>
             </ul>
             <button @click="updateAllComps()" v-if="!(comp.isComplete)">Refresh</button>
           </div>
-          <button @click="joinComp(comp)"  v-if="!(comp.isComplete)">Join</button>
+          <button @click="joinComp(comp)" v-if="!(comp.isComplete)">Join</button>
         </div>
         <div class="modal" v-if="userJoining">
           <div class="joinContainer">
@@ -140,7 +141,7 @@
   </div>
 </div>
 <div v-else id="userProfile" v-bind:style="projectStyle">
-  <Profile :currentUser="this.user"></Profile>
+  <Profile :currentUser="userProfileToView" :isLoggedIn="sameUser"></Profile>
 </div>
 </template>
 
@@ -149,7 +150,8 @@ import {
   storageRef,
   compsRef,
   choicesRef,
-  winsRef
+  winsRef,
+  adminsRef
 } from './database'
 import Authentication from './components/Authentication'
 import FAQ from './components/FAQ'
@@ -202,16 +204,26 @@ export default {
         backgroundColor: '#00ccff',
         color: '#000000',
       },
-        localPrices: {}
+      localPrices: {},
+      userProfileToView: null,
+      sameUser: false,
+      isAdmin: false
 
     }
   },
   firebase: {
     competitions: {
-        source: compsRef,
-        readyCallback: function() {
-          this.updateAllComps();
-        }
+      source: compsRef,
+      readyCallback: function() {
+        this.updateAllComps();
+      }
+    },
+
+    admins: {
+      source: adminsRef,
+      readyCallback: function() {
+        this.checkAdmin();
+      }
     },
 
     choices: choicesRef,
@@ -250,46 +262,67 @@ export default {
   },
   methods: {
 
+    checkAdmin() {
+      //console.log(this.admins);
+      for (var admin in this.admins) {
+        //onsole.log("admin is ", this.admins[admin]['.value']);
+        if (this.admins[admin]['.value'] === this.user.uid) {
+          this.isAdmin = true;
+        }
+      }
+    },
+
+    viewOtherProfile(user) {
+      this.hidden = true;
+      this.userProfileToView = user;
+      if (user.userid === this.user.uid) {
+        this.sameUser = true;
+        this.userProfileToView = this.user;
+      }
+      console.log(this.userProfileToView);
+    },
 
     // launches google search so user can find info
-    googleSearch(ticker){
-        window.open('http://google.com/search?q='+ticker+" Stock Price");
+    googleSearch(ticker) {
+      window.open('http://google.com/search?q=' + ticker + " Stock Price");
     },
 
 
     /// updates all comps
-    updateAllComps(){
-        console.log("update all comps");
-      for(var i in this.competitions){
-          var compKey = this.competitions[i]['.key'];
-          this.getAllPrices(this.competitions[i]);
-          var maxVal = 0.0;
-          for(var j in this.competitions[i]["users"]){
-              var currUser = this.competitions[i]["users"][j]["userid"];
-              var currUserName = this.competitions[i]["users"][j]["username"];
-              var newVal = 0.0;
-              //for each "ticker numShares" of a user
-              for(var k in this.competitions[i]["users"][j]["shares"]){
-                  var shares = parseFloat((this.competitions[i]["users"][j]["shares"][k]).split(" ")[1]);
-                  var ticker = (this.competitions[i]["users"][j]["shares"][k]).split(" ")[0];
-                  var lastPrice = parseFloat(this.competitions[i]["newestPrices"][ticker]);
-                  newVal += shares * lastPrice;
-              }
-              console.log("compKey: "+compKey);
-              console.log("newVal: " +newVal);
-              compsRef.child(compKey).child("users").child(currUser).update({currentValue: newVal});
-              if (newVal > maxVal) {
-                  maxVal = newVal;
-                  compsRef.child(compKey).update({
-                    leader: currUserName
-                  });
-                  compsRef.child(compKey).update({
-                    leaderID: currUser
-                  });
-                }
+    updateAllComps() {
+      console.log("update all comps");
+      for (var i in this.competitions) {
+        var compKey = this.competitions[i]['.key'];
+        this.getAllPrices(this.competitions[i]);
+        var maxVal = 0.0;
+        for (var j in this.competitions[i]["users"]) {
+          var currUser = this.competitions[i]["users"][j]["userid"];
+          var currUserName = this.competitions[i]["users"][j]["username"];
+          var newVal = 0.0;
+          //for each "ticker numShares" of a user
+          for (var k in this.competitions[i]["users"][j]["shares"]) {
+            var shares = parseFloat((this.competitions[i]["users"][j]["shares"][k]).split(" ")[1]);
+            var ticker = (this.competitions[i]["users"][j]["shares"][k]).split(" ")[0];
+            var lastPrice = parseFloat(this.competitions[i]["newestPrices"][ticker]);
+            newVal += shares * lastPrice;
           }
+          console.log("compKey: " + compKey);
+          console.log("newVal: " + newVal);
+          compsRef.child(compKey).child("users").child(currUser).update({
+            currentValue: newVal
+          });
+          if (newVal > maxVal) {
+            maxVal = newVal;
+            compsRef.child(compKey).update({
+              leader: currUserName
+            });
+            compsRef.child(compKey).update({
+              leaderID: currUser
+            });
+          }
+        }
       }
-        this.closeCompetitions();
+      this.closeCompetitions();
     },
 
     // close all of the competitions that have expired
@@ -314,13 +347,22 @@ export default {
       compsRef.once('value')
         .then(function(snapshot) {
           snapshot.forEach(function(child) {
-            if (child.child("deadline").val() <= new Date().getTime() && child.child("isComplete") === false) {
+            if (child.child("deadline").val() <= new Date().getTime() /*&& child.child("isComplete") === false*/ ) {
               console.log("COMPEITION EXPIRED");
               compsRef.child(child.key).update({
                 isComplete: true
               });
               // add the compKey as the key under cmpsWon, add the comps deadline as the value
               winsRef.child(child.child("leaderID").val()).child("compsWon").child(child.key).set(child.child("deadline").val());
+              const sgMail = require('@sendgrid/mail');
+              sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+              const msg = {
+                to: 'kelleyscroggs@gmail.com',
+                from: 'admins@fantasystocktrading.com',
+                subject: 'Competition Closed',
+                text: 'This is an alert that your Fantasy Stock Trading competition has closed.'
+              };
+              sgMail.send(msg);
             }
           })
 
@@ -330,7 +372,7 @@ export default {
     //gets the data from a url
     getAllPrices(comp) {
       console.log("getAllPrices");
-      var allStocks = techStocks.toString() + "," + largeCapStocks.toString()+ "," + finStocks.toString() + "," + consStocks.toString();
+      var allStocks = techStocks.toString() + "," + largeCapStocks.toString() + "," + finStocks.toString() + "," + consStocks.toString();
       var key = "LSL4TQ54M83DX4NV";
       var url = "https://www.alphavantage.co/query?function=BATCH_STOCK_QUOTES&symbols=" + allStocks + "&apikey=" + key;
 
@@ -356,18 +398,18 @@ export default {
       var initVal = 1000000.0;
       fetch(url).then(response => response.json())
         .then(data => {
-            var u = compsRef.child(comp['.key']).child("users").child(this.user.uid);
-            console.log(data);
-            var lastTime = data["Meta Data"]["3. Last Refreshed"];
-            lastTime = lastTime.slice(0, -2) + "00";
-            var price = parseFloat(data["Time Series (1min)"][lastTime]["4. close"]);
-            var shares = (initVal * (percent / 100.0)) / price;
-            u.child("shares").child(ticker).set(ticker + " " + shares);
+          var u = compsRef.child(comp['.key']).child("users").child(this.user.uid);
+          console.log(data);
+          var lastTime = data["Meta Data"]["3. Last Refreshed"];
+          lastTime = lastTime.slice(0, -2) + "00";
+          var price = parseFloat(data["Time Series (1min)"][lastTime]["4. close"]);
+          var shares = (initVal * (percent / 100.0)) / price;
+          u.child("shares").child(ticker).set(ticker + " " + shares);
         })
         .catch(error => {
           console.log(error);
-            alert("Your purchase for "+ticker+ " was not completed, please try again or buy a different stock");
-            compsRef.child(comp['.key']).child("users").child(this.user.uid).remove();
+          alert("Your purchase for " + ticker + " was not completed, please try again or buy a different stock");
+          compsRef.child(comp['.key']).child("users").child(this.user.uid).remove();
         });
     },
 
@@ -411,7 +453,10 @@ export default {
 
     // Adds a competition to the website
     addComp() {
-      //TODO: only admins & logged in users can do this function
+      if (this.user === null) {
+        alert("You must sign in to perform this action.")
+        return;
+      }
       console.log("adding competition");
       if (this.catToAdd !== null && this.timeToAdd !== null) {
         var currDate = new Date().getTime();
@@ -523,13 +568,13 @@ export default {
       }
     },
 
-      onSuccessfulJoin(){
-        //close the joining modal
-        this.userJoining = false;
-        //reset selected stocks ammounts
-        this.selectedStocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        this.updateAllComps();
-      },
+    onSuccessfulJoin() {
+      //close the joining modal
+      this.userJoining = false;
+      //reset selected stocks ammounts
+      this.selectedStocks = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      this.updateAllComps();
+    },
 
     //calculate how many shares of a stock that a user can buy at the current price
     calcShares(ticker, percent, comp, userObject) {
@@ -558,6 +603,20 @@ export default {
 </script>
 
 <style>
+.clickable {
+  text-decoration: underline;
+  color: blue;
+}
+
+.exit,
+.clickable:hover {
+  cursor: pointer;
+}
+
+.closeModal {
+  font-size: 300%;
+}
+
 ul {
   list-style-type: none;
 }

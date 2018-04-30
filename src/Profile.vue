@@ -3,25 +3,48 @@
 
   <button @click="backToMainView">Back to Competitions</button>
   <div id="userInfo">
-    <h4>{{currentUser.name}}</h4>
-    <h4>{{currentUser.email}}</h4>
+    <h4 v-if="isLoggedIn">{{currentUser.name}}</h4>
+    <h4 v-else>{{currentUser.username}}</h4>
+    <h4 v-if="isLoggedIn">{{currentUser.email}}</h4>
+    <h4 v-else><a :href="'mailto:' + currentUser.useremail + emailContent">{{currentUser.useremail}}</a></h4>
   </div>
 
   <div id="image">
     <img :src="userImageSource" alt="Empty Avatar">
-    <label for="files"><b>Upload an Image:</b></label>
-    <input type="file" id="files" name="files[]" />
-    <button @click="uploadImage()">Upload Image</button>
+    <div v-if="isLoggedIn" id="modifyImage">
+      <label for="files"><b>Upload an Image:</b></label>
+      <input type="file" id="files" name="files[]" />
+      <button @click="uploadImage()">Upload Image</button>
+    </div>
   </div>
   <hr>
-  <div id="competitionStatus">
-    <h3>Your Competitions:</h3>
+
+  <div class="competitionStatus">
+    <h3>Your Current Competitions:</h3>
     <ul id="userComps">
-      <li v-for="comp in competitions" v-if="comp.users">
-        <div class="compView" v-for="user in comp.users" v-if="user.userid === currentUser.uid">
+      <li v-for="comp in competitions" v-if="comp.users && !comp.isComplete">
+        <div class="compView" v-for="user in comp.users" v-if="(isLoggedIn && (user.userid === currentUser.uid)) || (user.userid === currentUser.userid)">
           <h4>{{ comp.title }}</h4>
           <ul class="compData">
             <li><b> Portfolio value: </b> ${{ user.currentValue }}</li>
+            <span><b> Shares owned: </b></span>
+            <ul class="sharesOwned">
+              <li v-for="share in user.shares">{{ share }}</li>
+            </ul>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="competitionStatus">
+    <h3>Your Old Competitions:</h3>
+    <ul id="userComps">
+      <li v-for="comp in competitions" v-if="comp.users && comp.isComplete">
+        <div class="compView" v-for="user in comp.users" v-if="(isLoggedIn && (user.userid === currentUser.uid)) || (user.userid === currentUser.userid)">
+          <h4>{{ comp.title }}</h4>
+          <ul class="compData">
+            <li><b> Final portfolio value: </b> ${{ user.currentValue }}</li>
             <span><b> Shares owned: </b></span>
             <ul class="sharesOwned">
               <li v-for="share in user.shares">{{ share }}</li>
@@ -36,6 +59,7 @@
 </template>
 
 <script>
+
 import { storageRef, picsRef, compsRef } from './database'
 //var storageRef = firebase.storage().ref();
 
@@ -44,7 +68,8 @@ export default {
   data() {
     return {
       isShown: false,
-      userImageSource: "src/assets/empty-avatar.jpg"
+      userImageSource: "src/assets/empty-avatar.jpg",
+      emailContent: "?subject=Fantasy%20Stock%20Trading&body=I%20saw%20your%20profile%20on%20Fantasy%20Stock%20Trading%20and%20wanted%20to%20say..."
     }
   },
   firebase: {
@@ -111,24 +136,11 @@ export default {
     },
 
     addImage(userId) {
-      /*
-      var src = null;
-      picsRef.once("value").then(function(snapshot) {
-        snapshot.forEach(function(child) {
-          if (child.key === userId) {
-            src = child.child('url').val();
-            console.log(src);
-          }
-        });
-      }).then(
-        this.userImageSource = src
-      );
-      */
 
       console.log("images is " + this.images);
       for (var i=0; i<this.images.length; i++) {
         console.log(this.images[i]);
-        if (this.images[i].id === this.currentUser.uid) {
+        if ((this.isLoggedIn && this.images[i].id === this.currentUser.uid) || this.images[i].id === this.currentUser.userid) {
           this.userImageSource = this.images[i].url;
         }
       }
@@ -138,6 +150,8 @@ export default {
 
     backToMainView() {
       this.$parent.hidden = !this.$parent.hidden;
+      this.$parent.userProfileToView = null;
+      this.$parent.sameUser = false;
     },
 
     testFn() {
@@ -154,7 +168,7 @@ export default {
   height: 100%;
 }
 
-#competitionStatus {
+.competitionStatus {
   text-align: center;
 }
 

@@ -70,15 +70,19 @@ export default {
                 uid: user.uid,
                 isAnonymous: user.isAnonymous
             })
+            this.$parent.checkAdmin();
         },
         signOut () {
             Firebase.auth().signOut()
             this.setUser(null)
+            this.$parent.isAdmin = false;
         },
 
         viewProfile() {
           //window.location.href = "./profile.html"
           this.$parent.hidden = !this.$parent.hidden;
+          this.$parent.userProfileToView = this.getUser();
+          this.$parent.sameUser = true;
         }
     },
     mounted () {
