@@ -1,0 +1,8 @@
+the users who tested our project are
+1. Chandler Cissel
+2. Matthew Levenson
+3. Rohit Das
+
+These tests took place ~11:30PM on 4/29/18
+
+The feedback we collected from them is in the file "CompSci 290 Final Project Usability Feedback.pdf" within this same directory.
